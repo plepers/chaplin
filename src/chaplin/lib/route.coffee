@@ -130,15 +130,12 @@ module.exports = class Route
     # Build params hash.
     params = @buildParams path, query
 
-    # Construct a route object to forward to the match event.
-    route = {path, @action, @controller, @name, query}
-
     # Remove the query string from routing options.
     delete options.query
 
-    # Publish a global event passing the route and the params.
-    # Original options hash forwarded to allow further forwarding to backbone.
-    @publishEvent 'router:match', route, params, options
+    # Construct a route object to forward to the matches event.
+    {path, @action, @controller, @name, query, params, options}
+
 
   # Returns the query string for the current document.
   getCurrentQuery: ->

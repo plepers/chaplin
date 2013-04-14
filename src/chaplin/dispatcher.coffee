@@ -4,6 +4,7 @@ _ = require 'underscore'
 Backbone = require 'backbone'
 utils = require 'chaplin/lib/utils'
 EventBroker = require 'chaplin/lib/event_broker'
+CompositeController = require 'chaplin/controllers/composite'
 
 module.exports = class Dispatcher
   # Borrow the static extend method from Backbone.
@@ -22,6 +23,8 @@ module.exports = class Dispatcher
   currentRoute: null
   currentParams: null
 
+  composite : null
+
   constructor: ->
     @initialize arguments...
 
@@ -33,6 +36,7 @@ module.exports = class Dispatcher
 
     # Listen to global events.
     @subscribeEvent 'router:match', @dispatch
+    @subscribeEvent 'router:matches', @matches
 
   # Controller management.
   # Starting and disposing controllers.
@@ -70,6 +74,37 @@ module.exports = class Dispatcher
     # Fetch the new controller, then go on.
     @loadController route.controller, (Controller) =>
       @controllerLoaded route, params, options, Controller
+
+  matches : ( routes ) ->
+    if( routes.length == 1 )
+      match = routes[0]
+      route =
+        path : match.path
+        action : match.action
+        controller : match.controller
+        name : match.name
+        query : match.query
+
+      @dispatch route , match.params, match.options
+
+    else
+      console.log "handle composite controller here :)"
+      @loadControllers routes, ( ctrls... ) =>
+        @composite ?= new CompositeController
+        @composite.recompose ctrls, routes
+
+
+
+  # load multiple controllers
+  # need amd
+  loadControllers: ( routes, handler ) ->
+    names = _.map routes, ( route ) =>
+      @settings.controllerPath + route.controller + @settings.controllerSuffix
+    if define?.amd
+      require names, handler
+    else
+      throw new Error 'Dispatch#loadControllers need AMD'
+
 
   # Load the constructor for a given controller name.
   # The default implementation uses require() from a AMD module loader

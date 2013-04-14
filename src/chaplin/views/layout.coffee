@@ -64,6 +64,9 @@ module.exports = class Layout # This class does not extend View.
 
     @subscribeEvent 'beforeControllerDispose', @hideOldView
     @subscribeEvent 'dispatcher:dispatch', @showNewView
+    # add composite support
+    @subscribeEvent 'composite:composed', @showComposite
+
     @subscribeEvent '!adjustTitle', @adjustTitle
 
     @subscribeEvent '!region:show', @showRegion
@@ -83,6 +86,8 @@ module.exports = class Layout # This class does not extend View.
   # -------------------------------
 
   # Handler for the global beforeControllerDispose event.
+  # support also composite children dispose since events are dispatched
+  # by children
   hideOldView: (controller) ->
     # Reset the scroll position.
     scrollTo = @settings.scrollTo
@@ -98,6 +103,12 @@ module.exports = class Layout # This class does not extend View.
   showNewView: (controller) ->
     view = controller.view
     view.$el.show() if view
+
+  # Handler for composite controller construction
+  showComposite: (children) ->
+    for child in children
+      view = child.controller.view
+      view.$el.show() if view
 
   # Handler for the global dispatcher:dispatch event.
   # Change the document title to match the new controller.

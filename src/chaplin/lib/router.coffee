@@ -4,10 +4,12 @@ _ = require 'underscore'
 Backbone = require 'backbone'
 EventBroker = require 'chaplin/lib/event_broker'
 Route = require 'chaplin/lib/route'
+History = require 'chaplin/lib/history'
 utils = require 'chaplin/lib/utils'
+Chaplin = require 'chaplin'
 
 # The router which is a replacement for Backbone.Router.
-# Like the standard router, it creates a Backbone.History
+#
 # instance and registers routes on it.
 module.exports = class Router # This class does not extend Backbone.Router.
   # Borrow the static extend method from Backbone.
@@ -31,21 +33,21 @@ module.exports = class Router # This class does not extend Backbone.Router.
 
     @createHistory()
 
-  # Create a Backbone.History instance.
+  # Create a Chaplin.history instance.
   createHistory: ->
-    Backbone.history or= new Backbone.History()
+    Chaplin.history or= new History()
 
   startHistory: ->
-    # Start the Backbone.History instance to start routing.
+    # Start the Chaplin.history instance to start routing.
     # This should be called after all routes have been registered.
-    Backbone.history.start @options
+    Chaplin.history.start @options
 
-  # Stop the current Backbone.History instance from observing URL changes.
+  # Stop the current Chaplin.history instance from observing URL changes.
   stopHistory: ->
-    Backbone.history.stop() if Backbone.History.started
+    Chaplin.history.stop() if History.started
 
   # Connect an address with a controller action.
-  # Creates a route on the Backbone.History instance.
+  # Creates a route on the Chaplin.history instance.
   match: (pattern, target, options = {}) =>
     if arguments.length is 2 and typeof target is 'object'
       # Handles cases like `match 'url', controller: 'c', action: 'a'`.
@@ -65,16 +67,16 @@ module.exports = class Router # This class does not extend Backbone.Router.
 
     # Create the route.
     route = new Route pattern, controller, action, options
-    # Register the route at the Backbone.History instance.
-    # Don’t use Backbone.history.route here because it calls
+    # Register the route at the Chaplin.history instance.
+    # Don’t use Chaplin.history.route here because it calls
     # handlers.unshift, inserting the handler at the top of the list.
     # Since we want routes to match in the order they were specified,
     # we’re appending the route at the end.
-    Backbone.history.handlers.push {route, callback: route.handler}
+    Chaplin.history.handlers.push {route, callback: route.handler}
     route
 
   # Route a given URL path manually. Returns whether a route matched.
-  # This looks quite like Backbone.History::loadUrl but it
+  # This looks quite like Chaplin.history::loadUrl but it
   # accepts an absolute URL with a leading slash (e.g. /foo)
   # and passes the routing options to the callback function.
   route: (path, options) =>
@@ -86,11 +88,16 @@ module.exports = class Router # This class does not extend Backbone.Router.
     # Remove leading subdir and hash or slash.
     path = path.replace @removeRoot, ''
 
+    matches = [];
     # Find a matching route.
-    for handler in Backbone.history.handlers
+    for handler in Chaplin.history.handlers
       if handler.route.test(path)
-        handler.callback path, options
-        return true
+        matches.push handler.callback path, options
+
+    if matched.length > 0
+      @publishEvent 'router:matches', matched
+      return true
+
     false
 
   # Handler for the global !router:route event.
@@ -130,7 +137,7 @@ module.exports = class Router # This class does not extend Backbone.Router.
     root = @options.root
 
     # First filter the route handlers to those that are of the same name.
-    handlers = Backbone.history.handlers
+    handlers = Chaplin.history.handlers
     for handler in handlers when handler.route.matches criteria
       # Attempt to reverse using the provided parameter hash.
       reversed = handler.route.reverse params
@@ -155,7 +162,7 @@ module.exports = class Router # This class does not extend Backbone.Router.
       replace: options.replace is true
 
     # Navigate to the passed URL and forward options to Backbone.
-    Backbone.history.navigate url, navigateOptions
+    Chaplin.history.navigate url, navigateOptions
 
   # Handler for the global !router:changeURL event.
   # Accepts both the url and an options hash that is forwarded to Backbone.
@@ -170,9 +177,9 @@ module.exports = class Router # This class does not extend Backbone.Router.
   dispose: ->
     return if @disposed
 
-    # Stop Backbone.History instance and remove it.
+    # Stop Chaplin.history instance and remove it.
     @stopHistory()
-    delete Backbone.history
+    delete Chaplin.history
 
     @unsubscribeAllEvents()
 

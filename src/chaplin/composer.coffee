@@ -38,6 +38,8 @@ module.exports = class Composer
     @subscribeEvent '!composer:compose', @compose
     @subscribeEvent '!composer:retrieve', @retrieve
     @subscribeEvent 'dispatcher:dispatch', @cleanup
+    # add composite support
+    @subscribeEvent 'composite:composed', @cleanup
 
   # Constructs a composition and composes into the active compositions.
   # This function has several forms as described below:
