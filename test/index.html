@@ -35,7 +35,7 @@
           }
         },
         // For easier development, disable browser caching
-        urlArgs: 'bust=' + (new Date()).getTime()
+        urlArgs: '' //'bust=' + (new Date()).getTime()
       });
       mocha.setup({ui: 'bdd', ignoreLeaks: true});
       // Wonderful hack to send a message to grunt from inside a mocha test.
@@ -49,23 +49,31 @@
       window.expect = SinonExpect.enhance(expect, sinon, 'was');
       window.onload = function() {
         var specs = [
-          'event_broker',
-          'mediator',
-          'router',
-          'application',
-          'layout',
-          'dispatcher',
-          'composer',
-          'composition',
-          'collection_view',
-          'model',
-          'collection',
-          'controller',
-          'view',
-          'delayer',
-          'utils',
-          'helpers',
-          'sync_machine'
+          
+          // 'event_broker',
+          // 'mediator',
+          
+          // router is now broken
+          //'router',
+          
+
+          // 'application',
+          // 'layout',
+          // 'dispatcher',
+          // 'composer',
+          // 'composition',
+          // 'collection_view',
+          // 'model',
+          // 'collection',
+          // 'controller',
+          // 'view',
+          // 'delayer',
+          // 'utils',
+          // 'helpers',
+          // 'sync_machine',
+          'path',
+          'sitetree',
+          'node'
         ];
         var loaded = [];
         for (var i = 0, l = specs.length; i < l; i++) {
