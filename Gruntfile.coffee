@@ -19,11 +19,14 @@ module.exports = (grunt) ->
     'temp/chaplin/composer.js'
     'temp/chaplin/controllers/controller.js'
     'temp/chaplin/controllers/composite.js'
+
     'temp/chaplin/models/collection.js'
     'temp/chaplin/models/model.js'
+
     'temp/chaplin/views/layout.js'
     'temp/chaplin/views/view.js'
     'temp/chaplin/views/collection_view.js'
+
     'temp/chaplin/lib/history.js'
     'temp/chaplin/lib/route.js'
     'temp/chaplin/lib/router.js'
@@ -34,6 +37,11 @@ module.exports = (grunt) ->
     'temp/chaplin/lib/sync_machine.js'
     'temp/chaplin/lib/utils.js'
     'temp/chaplin/lib/helpers.js'
+
+    'temp/chaplin/tree/node.js'
+    'temp/chaplin/tree/path.js'
+    'temp/chaplin/tree/sitetree.js'
+
     'temp/chaplin.js'
   ]
 
@@ -429,7 +437,7 @@ module.exports = (grunt) ->
   # Default
   # -------
   grunt.registerTask 'default', [
-    'lint'
+    
     'clean'
     'build'
     'test'
