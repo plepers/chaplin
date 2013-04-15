@@ -7,12 +7,16 @@ module.exports =
   Controller:             require 'chaplin/controllers/controller'
   CompositeController:    require 'chaplin/controllers/composite'
   Composer:               require 'chaplin/composer'
+
   Composition:            require 'chaplin/lib/composition'
+
   Collection:             require 'chaplin/models/collection'
   Model:                  require 'chaplin/models/model'
+
   Layout:                 require 'chaplin/views/layout'
   View:                   require 'chaplin/views/view'
   CollectionView:         require 'chaplin/views/collection_view'
+
   History:                require 'chaplin/lib/history'
   Route:                  require 'chaplin/lib/route'
   Router:                 require 'chaplin/lib/router'
@@ -22,3 +26,7 @@ module.exports =
   support:                require 'chaplin/lib/support'
   SyncMachine:            require 'chaplin/lib/sync_machine'
   utils:                  require 'chaplin/lib/utils'
+
+  Node:                   require 'chaplin/tree/node'
+  Path:                   require 'chaplin/tree/path'
+  SiteTree:               require 'chaplin/tree/sitetree'
