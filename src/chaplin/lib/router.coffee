@@ -94,8 +94,8 @@ module.exports = class Router # This class does not extend Backbone.Router.
       if handler.route.test(path)
         matches.push handler.callback path, options
 
-    if matched.length > 0
-      @publishEvent 'router:matches', matched
+    if matches.length > 0
+      @publishEvent 'router:matches', matches
       return true
 
     false
