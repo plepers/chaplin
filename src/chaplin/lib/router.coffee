@@ -96,6 +96,10 @@ module.exports = class Router # This class does not extend Backbone.Router.
 
     if matches.length > 0
       @publishEvent 'router:matches', matches
+
+      url = path + if options.query then "?#{options.query}" else ""
+      @changeURL url
+
       return true
 
     false
