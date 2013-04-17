@@ -5,6 +5,7 @@ Backbone = require 'backbone'
 utils = require 'chaplin/lib/utils'
 EventBroker = require 'chaplin/lib/event_broker'
 CompositeController = require 'chaplin/controllers/composite'
+DomModel = require 'chaplin/models/dom_model'
 
 module.exports = class Dispatcher
   # Borrow the static extend method from Backbone.
@@ -25,6 +26,10 @@ module.exports = class Dispatcher
 
   composite : null
 
+  structure : null
+
+  domModel : new DomModel
+
   constructor: ->
     @initialize arguments...
 
@@ -37,6 +42,13 @@ module.exports = class Dispatcher
     # Listen to global events.
     @subscribeEvent 'router:match', @dispatch
     @subscribeEvent 'router:matches', @matches
+    @subscribeEvent 'router:fallback', @fallback
+
+    @structure = @domModel.parseNode document.body
+
+  testDomMdlLoading : () ->
+    @domModel.fetch( { url : "newdom.html"} )
+
 
   # Controller management.
   # Starting and disposing controllers.
@@ -92,6 +104,10 @@ module.exports = class Dispatcher
       @loadControllers routes, ( ctrls... ) =>
         @composite ?= new CompositeController
         @composite.recompose ctrls, routes
+
+  # no routes founds in history handlers
+  # try to load new dom model
+  fallback : ( fragment ) ->
 
 
 

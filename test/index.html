@@ -71,6 +71,8 @@
           // 'utils',
           // 'helpers',
           // 'sync_machine',
+          'dom_model',
+          'html_model_parser',
           'path',
           'sitetree',
           'node'
@@ -92,5 +94,118 @@
   <body>
     <div id="mocha"></div>
     <div id="testbed"></div>
+
+    <div id="basic" style="display:none;">
+
+      <div data-module="mainlayout">
+
+        <div data-module="header" data-models-url="/site/trv-header-view.dml">
+          
+          <div data-model="default">
+
+            <div data-id="labels">
+                <h1 data-id="title">My title</h1>
+                <h2 data-id="subtitle">Subtitle</h2>
+                <p data-id="desc">Description</p>
+                <p data-id="cancel">Cancel</p>
+            </div>
+
+            <!-- 
+            data-sel is text content by default 
+            if no models found in nested children
+            -->
+            <h1 data-id="some_flag">true</h1>
+
+            <h2 data-id="some_config">/a/string</h2>
+
+            
+            <div data-id="sections" > <!-- sections is a model with -->
+                <section data-id="home" > <!-- section become a Collection of labels models -->
+                    <Ul data-id="labels">
+                        <li data-id="foo">labelA1</li>
+                        <li data-id="bar">labelA2</li>
+                    </Ul>
+                </section>
+                <section data-id="contact" >
+                    <ul data-id="labels">
+                        <li data-id="foo">labelB1</li>
+                        <li data-id="bar">labelB2</li>
+                    </ul>
+                </section>
+            </div>
+
+            <ul data-list="nav"> <!-- data-list create a collection -->
+              <a data-id="link1" href="./link1" target="_blank" alt="alternative content">Link 1</a>
+              <a data-id="link2" href="./link2" target="_blank" alt="alternative content">Link 2</a>
+            </ul>
+
+            <ul data-list="empty_collection"> <!-- data-list create a collection -->
+              <a href="./link1" target="_blank" alt="alternative content">Link 1</a>
+              <a href="./link2" target="_blank" alt="alternative content">Link 2</a>
+            </ul>
+
+            <ul data-list="auto_collection" data-sel="a"> <!-- data-list create a collection -->
+              <a href="./link1" target="_blank" alt="alternative content">Link 1</a>
+              <a href="./link2" target="_blank" alt="alternative content">Link 2</a>
+            </ul>
+
+            
+
+            <h1 data-struct="title : text">My Title</h1>
+
+          </div>
+
+        </div>
+
+        <div data-module="pes" data-model="/site/page1/spage2/pes-view.dml">
+          
+          <div data-model="default">
+            <h1 data-id="title">My title</h1>
+          </div>
+
+        </div>
+
+        <div data-module="footer" data-model="/site/footer-view.dml">
+          <div data-model="default">
+            <p data-id="legal">legal mention</p>
+            <ul data-list="links"> <!-- data-list create a collection -->
+              <a data-id="link1" href="./link1" target="_blank" alt="alternative content">Link 1</a>
+              <a data-id="link2" href="./link2" target="_blank" alt="alternative content">Link 2</a>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+        <!--
+
+
+<manifest>
+
+  <labels>                      Collection of 'label' models
+    <l id="toto">Label 1<l>     'label' models
+    <l id="foo">Label 1<l>      ''
+    <l id="bar">Label 1<l>      ''
+  </labels>
+
+        labels : 
+          [ 
+            "label1", 
+            "label2", ... 
+          ]
+        title : My Title
+        subtitle : My Subtitle
+        sections : 
+          section : 
+          [
+            {
+              labels : 
+              [
+                "label1", 
+                "label2", ... 
+              ]
+            }
+          ]
+      -->
   </body>
 </html>

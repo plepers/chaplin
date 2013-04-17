@@ -8,6 +8,7 @@
     "jquery": "1.9.x",
     "underscore": "1.4.x",
     "backbone": "1.0.x",
+    "knockout": "2.2.x",
     "benchmark": "git://github.com/bestiejs/benchmark.js.git"
   },
   "exportsOverride": {

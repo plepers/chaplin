@@ -22,6 +22,8 @@ module.exports = (grunt) ->
 
     'temp/chaplin/models/collection.js'
     'temp/chaplin/models/model.js'
+    'temp/chaplin/models/html_model_parser.js'
+    'temp/chaplin/models/dom_model.js'
 
     'temp/chaplin/views/layout.js'
     'temp/chaplin/views/view.js'
@@ -41,6 +43,7 @@ module.exports = (grunt) ->
     'temp/chaplin/tree/node.js'
     'temp/chaplin/tree/path.js'
     'temp/chaplin/tree/sitetree.js'
+
 
     'temp/chaplin.js'
   ]

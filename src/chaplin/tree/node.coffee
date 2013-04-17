@@ -1,5 +1,7 @@
 
+
 Backbone = require 'backbone'
+_ = require 'underscore'
 
 module.exports = class Node 
     

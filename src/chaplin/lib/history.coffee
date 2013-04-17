@@ -24,4 +24,5 @@ module.exports = class History extends Backbone.History
       @publishEvent 'router:matches', matched
       return true
 
+    @publishEvent 'router:fallback', fragment
     false

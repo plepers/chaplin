@@ -12,6 +12,8 @@ module.exports =
 
   Collection:             require 'chaplin/models/collection'
   Model:                  require 'chaplin/models/model'
+  HtmlModelParser:        require 'chaplin/models/html_model_parser'
+  DomModel:               require 'chaplin/models/dom_model'
 
   Layout:                 require 'chaplin/views/layout'
   View:                   require 'chaplin/views/view'
