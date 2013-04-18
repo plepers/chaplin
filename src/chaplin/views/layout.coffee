@@ -64,8 +64,7 @@ module.exports = class Layout # This class does not extend View.
 
     @subscribeEvent 'beforeControllerDispose', @hideOldView
     @subscribeEvent 'dispatcher:dispatch', @showNewView
-    # add composite support
-    @subscribeEvent 'composite:composed', @showComposite
+    @publishEvent   'component:render', @showComponent
 
     @subscribeEvent '!adjustTitle', @adjustTitle
 
@@ -104,11 +103,9 @@ module.exports = class Layout # This class does not extend View.
     view = controller.view
     view.$el.show() if view
 
-  # Handler for composite controller construction
-  showComposite: (children) ->
-    for child in children
-      view = child.controller.view
-      view.$el.show() if view
+  showComponent : (controller) ->
+    view = controller.view
+    view.$el.show() if view
 
   # Handler for the global dispatcher:dispatch event.
   # Change the document title to match the new controller.

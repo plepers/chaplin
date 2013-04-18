@@ -23,7 +23,8 @@
         paths: {
           jquery: '../components/jquery/jquery',
           underscore: '../components/underscore/underscore',
-          backbone: '../components/backbone/backbone'
+          backbone: '../components/backbone/backbone',
+          pjax: '../components/jquery-pjax/jquery.pjax'
         },
         shim: {
           backbone: {
@@ -97,9 +98,9 @@
 
     <div id="basic" style="display:none;">
 
-      <div data-module="mainlayout">
+      <div data-module="mainlayout#show">
 
-        <div data-module="header" data-models-url="/site/trv-header-view.dml">
+        <div data-module="header#show" data-models-url="/site/trv-header-view.dml">
           
           <div data-model="default">
 
@@ -157,7 +158,7 @@
 
         </div>
 
-        <div data-module="pes" data-model="/site/page1/spage2/pes-view.dml">
+        <div data-module="pes#show" data-model="/site/page1/spage2/pes-view.dml">
           
           <div data-model="default">
             <h1 data-id="title">My title</h1>
@@ -165,7 +166,7 @@
 
         </div>
 
-        <div data-module="footer" data-model="/site/footer-view.dml">
+        <div data-module="footer#show" data-model="/site/footer-view.dml">
           <div data-model="default">
             <p data-id="legal">legal mention</p>
             <ul data-list="links"> <!-- data-list create a collection -->

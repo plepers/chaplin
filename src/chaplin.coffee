@@ -6,6 +6,7 @@ module.exports =
   Dispatcher:             require 'chaplin/dispatcher'
   Controller:             require 'chaplin/controllers/controller'
   CompositeController:    require 'chaplin/controllers/composite'
+  Root:                   require 'chaplin/controllers/root'
   Composer:               require 'chaplin/composer'
 
   Composition:            require 'chaplin/lib/composition'

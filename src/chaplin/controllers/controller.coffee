@@ -13,21 +13,27 @@ module.exports = class Controller
   _(@prototype).extend EventBroker
 
   view: null
+  context : null
 
   # Internal flag which stores whether `redirectTo`
   # was called in the current action.
   redirected: false
 
   constructor: ->
-    @initialize arguments...
+    
+  #  called by context
+  initialize: ( context ) ->
+    @context = context
+  
+  # override this method to provide containers for sub modules
+  # @index : the index of the submodule to add
+  # the default implementation return null, it mean that this controller
+  # can't contain nested children
+  getRegion: ( index ) ->
+    return null
 
-  initialize: ->
-    # Empty per default.
-
-  # Change document title.
-  adjustTitle: (subtitle) ->
-    @publishEvent '!adjustTitle', subtitle
-
+  getContainer : ->
+    @context.getContainer()
   # Composer
   # --------
 

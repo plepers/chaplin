@@ -28,7 +28,7 @@ module.exports = class Dispatcher
 
   structure : null
 
-  domModel : new DomModel
+  domModel : null
 
   constructor: ->
     @initialize arguments...
@@ -41,13 +41,35 @@ module.exports = class Dispatcher
 
     # Listen to global events.
     @subscribeEvent 'router:match', @dispatch
-    @subscribeEvent 'router:matches', @matches
-    @subscribeEvent 'router:fallback', @fallback
+    # @subscribeEvent 'router:matches', @matches
+    # @subscribeEvent 'router:fallback', @fallback
 
-    @structure = @domModel.parseNode document.body
+    if options['domModelContainer']
+      dmc = options['domModelContainer']
+    else
+      dmc = document.createElement( 'div')
+      document.body.appendChild( dmc )
 
-  testDomMdlLoading : () ->
-    @domModel.fetch( { url : "newdom.html"} )
+    @domModel = new DomModel dmc
+    @domModel.on "update", @updateSkeleton
+    @updateSkeleton()
+
+  # testDomMdlLoading : () ->
+  #   @domModel.fetch( { url : "newdom.html"} )
+
+
+  updateSkeleton : ->
+    console.log 'Dispatcher#updateSkeleton'
+    contexts = @domModel.getFlatten()
+    @loadControllers contexts, ( ctrls... ) =>
+        # initalize all nodes graph first
+        for ctx, i in contexts
+          ctx.initialize ctrls[i]
+
+        # then build graph
+        for ctx in contexts
+          ctx.executeAction()
+
 
 
   # Controller management.
@@ -87,35 +109,35 @@ module.exports = class Dispatcher
     @loadController route.controller, (Controller) =>
       @controllerLoaded route, params, options, Controller
 
-  matches : ( routes ) ->
-    if( routes.length == 1 )
-      match = routes[0]
-      route =
-        path : match.path
-        action : match.action
-        controller : match.controller
-        name : match.name
-        query : match.query
+  # matches : ( routes ) ->
+  #   if( routes.length == 1 )
+  #     match = routes[0]
+  #     route =
+  #       path : match.path
+  #       action : match.action
+  #       controller : match.controller
+  #       name : match.name
+  #       query : match.query
 
-      @dispatch route , match.params, match.options
+  #     @dispatch route , match.params, match.options
 
-    else
-      console.log "handle composite controller here :)"
-      @loadControllers routes, ( ctrls... ) =>
-        @composite ?= new CompositeController
-        @composite.recompose ctrls, routes
+  #   else
+  #     console.log "handle composite controller here :)"
+  #     @loadControllers routes, ( ctrls... ) =>
+  #       @composite ?= new CompositeController
+  #       @composite.recompose ctrls, routes
 
   # no routes founds in history handlers
   # try to load new dom model
   fallback : ( fragment ) ->
-
+    console.log "Dispatcher#fallback : #{fragment}"
 
 
   # load multiple controllers
   # need amd
-  loadControllers: ( routes, handler ) ->
-    names = _.map routes, ( route ) =>
-      @settings.controllerPath + route.controller + @settings.controllerSuffix
+  loadControllers: ( contexts, handler ) ->
+    names = _.map contexts, ( ctx ) =>
+      @settings.controllerPath + ctx.id + @settings.controllerSuffix
     if define?.amd
       require names, handler
     else

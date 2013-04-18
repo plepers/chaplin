@@ -19,6 +19,7 @@ module.exports = (grunt) ->
     'temp/chaplin/composer.js'
     'temp/chaplin/controllers/controller.js'
     'temp/chaplin/controllers/composite.js'
+    'temp/chaplin/controllers/root.js'
 
     'temp/chaplin/models/collection.js'
     'temp/chaplin/models/model.js'
@@ -264,6 +265,7 @@ module.exports = (grunt) ->
         options:
           targetDir: './test/components'
           cleanup: true
+      
 
     # Test runner
     # -----------
