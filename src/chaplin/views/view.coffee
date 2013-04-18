@@ -87,7 +87,7 @@ module.exports = class View extends Backbone.View
       # Call the original method.
       render.apply this, arguments
       # Attach to DOM.
-      @attach arguments... if @autoAttach
+      # @attach arguments... if @autoAttach
       # Return the view.
       this
 
@@ -341,16 +341,24 @@ module.exports = class View extends Backbone.View
     this
 
   # This method is called after a specific `render` of a derived class.
-  attach: ->
+  attach: ( container ) ->
+    @container = container
     # Attempt to bind this view to its named region.
     @publishEvent '!region:show', @region, this if @region?
 
-    # Automatically append to DOM if the container element is set.
-    if @container
-      # Append the view to the DOM.
-      $(@container)[@containerMethod] @el
-      # Trigger an event.
-      @trigger 'addedToDOM'
+    # Append the view to the DOM.
+    $(container)[@containerMethod] @el
+    # Trigger an event.
+    @trigger 'addedToDOM'
+
+  # This method is called after a specific `render` of a derived class.
+  detach: ( ) ->
+    return unless @container
+   
+
+    # Append the view to the DOM.
+    $(container).remove @el
+    # Trigger an event.
 
   # Disposal
   # --------

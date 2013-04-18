@@ -19,6 +19,7 @@ class ModelContext
         @data = null
         @selector = []
         @isCollection = isCollection is true
+        @node = null
 
     createModel : ( parent ) ->
 
@@ -111,8 +112,10 @@ tagNameSelector = ( localName ) ->
 
 module.exports = class HtmlModelParser
 
+
     constructor : -> 
         @rootCtx = new ModelContext( '__root__' )
+        @ctxStack = [@rootCtx]
 
     parse : ( htmlStr ) ->
         console.log "TODO DomModel.parseHtmlString"
@@ -122,6 +125,8 @@ module.exports = class HtmlModelParser
         @parseNodeAndDescendants root, @rootCtx
         @buildModel @rootCtx
 
+    
+
     buildModel:  ( ctx ) ->
         # console.log (@rootCtx.debugLog())
         mdl = new Model
@@ -130,7 +135,7 @@ module.exports = class HtmlModelParser
         # TODO avoid useless root model creation
         return mdl.get( "__root__" )
 
-    parseNodeAndDescendants : ( node, context ) ->
+    parseNodeAndDescendants : ( node ) ->
         # DEBUG
         if not context?
             throw "aie"
@@ -138,35 +143,39 @@ module.exports = class HtmlModelParser
 
         # if the node can't product context 
         # context is not changed
-        context = @handleNode( node, context )
+        @enterNode node
         
 
         currentChild = next = node.firstChild
         while currentChild = next
             next = currentChild.nextSibling
-            @parseNodeAndDescendants currentChild, context
+            @parseNodeAndDescendants currentChild
 
-        # if no data found in descendants
-        # use defaults methods to grab datas in this node
-        if not context.hasComplexDatas() and not context.isCollection
-            context.setData( @getDefaultDatas node )
+        @exitNode node
 
 
-
-    handleNode : ( node, pcontext ) ->
-        ctx = pcontext
-
+    enterNode : ( node ) ->
+        
         if @nodeHasDataStruct(node, DATA_ID_ATTR ) or @nodeHasDataStruct(node, DATA_LIST_ATTR)
-            ctx = @createContextFromNode node, ctx
-
+            @ctxStack.unshift (@createContextFromNode node, @ctxStack[0])
 
         # else if @nodeMatchSelectors node, ctx.selectors
 
-
         if @nodeHasDataStruct node, DATA_SELECTOR_ATTR
-            @addSelectorsFromNode node, ctx
+            @addSelectorsFromNode node, @ctxStack[0]
 
-        return ctx
+
+
+    exitNode : ( node )->
+
+        return if @ctxStack[0].node isnt node
+
+        ctx = @ctxStack.shift()
+
+        # if no data found in descendants
+        # use defaults methods to grab datas in this node
+        if ctx? and not ctx.hasComplexDatas() and not ctx.isCollection
+            ctx.setData( @getDefaultDatas node )
 
 
 
@@ -197,6 +206,7 @@ module.exports = class HtmlModelParser
             isList = true
         ctx = new ModelContext dataName, isList
         pcontext.addChild ctx
+        ctx.node = node
         return ctx
 
     addSelectorsFromNode : ( node, ctx ) ->

@@ -80,6 +80,13 @@ module.exports = class Router # This class does not extend Backbone.Router.
   # accepts an absolute URL with a leading slash (e.g. /foo)
   # and passes the routing options to the callback function.
   route: (path, options) =>
+
+    # debug
+    # for now always prevent links
+    # and try to load new dom model
+    @publishEvent 'router:fallback', path, options
+    return true
+
     options = if options then _.clone(options) else {}
 
     # Update the URL programmatically after routing.

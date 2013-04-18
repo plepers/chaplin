@@ -4,6 +4,7 @@ Backbone = require 'backbone'
 Model = require 'chaplin/models/model'
 EventBroker = require 'chaplin/lib/event_broker'
 Root = require 'chaplin/controllers/root'
+ModelParser = require 'chaplin/models/html_model_parser'
 $ = require 'jquery'
 
 # require 'pjax'
@@ -32,8 +33,12 @@ class ComponentContext
         @controller = null
         @params = null
         @index = -1
+        @running  = false
 
         @childsChanged = true
+        @modelParser = new ModelParser
+
+
 
     setModelUrl : ( url ) ->
         @modelUrl = url
@@ -46,28 +51,36 @@ class ComponentContext
 
     addChild : ( comp ) ->
         if( @_byId[ comp.id ] isnt undefined )
-            throw "DomModel.ComponentContex#addChild subcontext '#{comp.id}' already exist in #{@id}"
+            throw "DomModel.ComponentContex#addChild subcontext '#{comp.id}' already exist in #{@path()}"
         @children.push comp
         comp.index = @_byId[ comp.id ] = @children.length-1
         comp.parent = @
         # invalidate comp struct
-        @childsChanged = true
+
+    removeChild : ( comp ) ->
+        if( index = @_byId[ comp.id ] is undefined )
+            throw "DomModel.ComponentContex#removeChild subcontext '#{comp.id}' doesn't exist in #{@path()}"
+        @children.splice index, 1
+        delete @_byId[ comp.id ]
+        comp.parent = null
+        # invalidate comp struct
 
     replaceBy : ( newone ) ->
         if @id isnt newone.id
-            throw "DomModel.ComponentContext#replaceBy ids must be the same : '#{@id}' in #{newone.id}"
+            throw "DomModel.ComponentContext#replaceBy ids must be the same : '#{@path()}' in #{newone.id}"
 
         if @parent?
             @parent.replaceChild @, newone
             newone.parent = @parent
+        @parent = null
 
         newone.copyChildsFrom @
-        @dispose()
+        @_dispose()
 
     replaceChild : ( child, newChild ) ->
 
         if @_byId[ child.id ] is undefined 
-            throw "DomModel.ComponentContext#replaceChild child doesn't exist '#{child.id}' in #{@id}"
+            throw "DomModel.ComponentContext#replaceChild child doesn't exist '#{child.id}' in #{@path()}"
         if child.id isnt newChild.id
             throw "DomModel.ComponentContext#replaceChild pair have different ids '#{child.id}' in #{newChild.id}"
 
@@ -76,14 +89,15 @@ class ComponentContext
 
         newChild.copyChildsFrom child
         # invalidate comp struct
-        @childsChanged = true
 
     copyChildsFrom : ( other ) ->
-        @children = other.children
-        @_byId = other._byId
         for child in @children
+            child.parent = null
+        @children = other.children
+        @_byId = {}
+        for child, i in @children
             child.parent = @
-        @childsChanged = true
+            @_byId[child.id] = i
 
 
     # called by dispatcher when Controllers are all loaded
@@ -96,19 +110,30 @@ class ComponentContext
 
     # called by dispatcher when all graph has been initialized
     executeAction : ->
+        if @running
+            console.log "ControllerContext#executeAction already running #{@path()}"
+            return
+        @running = true
+        console.log "ControllerContext#executeAction #{@id}: "+@action
         # Call the controller action with params and options.
         @controller[@action] @params
 
         #  request render in Layout 
         @publishEvent 'component:render', @controller
-            
 
-    getContainer : ( child )->
+    attach : ->
+        view = @controller.view
+        view.attach @getContainer() if view
+
+    getContainer : ->
         return @parent.controller.getRegion @index
 
-    dispose : () ->
+    _dispose : () ->
+
+        if @parent
+            @parent.removeChild @
+
         @children = null
-        @parent = null
         @modelUrl = null
         @modelIds = null
         @modelNodes = null
@@ -187,7 +212,8 @@ module.exports = class DomModel extends Model
             return @rootCtx # = oldContexts
         
         # invalidate flatten view
-        @flatten = null     
+        @flatten = null   
+
         @trigger "update"
         @trigger "parsed"
         return @rootCtx
@@ -195,7 +221,7 @@ module.exports = class DomModel extends Model
     # return flat representation of components graph
     #  remove __root__ context from the result
     getFlatten : ->
-        @flatten ?= @rootCtx.flatten()[1..]
+        @flatten = @rootCtx.flatten()[1..]
 
     fetch : ( options ) ->
 
@@ -230,26 +256,46 @@ module.exports = class DomModel extends Model
 
             if not hasChanged 
                 for newCtx in newFlat
-                    newCtx.dispose()
+                    newCtx._dispose()
                 return false
 
-
+        # children snapshot to compute child invalidation
+        # after rearange the graph
+        snapshot = []
+        for newCtx, i in newFlat
+            snapshot[i] = [].concat newCtx.children
+               
         recycles = []
 
-        for newCtx in newFlat
+        
+        for newCtx, i in newFlat
             dispose = false
             for oldCtx, j in oldFlat
                 if oldCtx.equal newCtx
                     oldFlat.splice j, 1
                     newCtx.replaceBy oldCtx
+                    newFlat[i] = oldCtx
                     dispose = true
                     break
             # if dispose # already disposed by replaceBy
             #     newCtx.dispose()
 
+        # dispose stale contexts 
         for oldCtx in oldFlat
-            oldCtx.dispose()
+            oldCtx._dispose()
         
+        # compute children invalidation
+        for newCtx, i in newFlat
+            oldchildren = snapshot[i]
+            children = newCtx.children
+            if oldchildren.length isnt children.length
+                newCtx.childsChanged = true
+            else
+                for c, i in children
+                    if c isnt oldchildren[i]
+                        newCtx.childsChanged = true
+                        break
+                
 
           
         
@@ -263,6 +309,8 @@ module.exports = class DomModel extends Model
         # if the node can't produce context 
         # context is not changed
         context = @handleNode( node, context )
+
+
         
 
         currentChild = next = node.firstChild
@@ -271,7 +319,8 @@ module.exports = class DomModel extends Model
             @parseNodeAndDescendants currentChild, context
 
 
-       
+        context.modelParser.exitNode node
+    
 
 
 
@@ -281,12 +330,11 @@ module.exports = class DomModel extends Model
         if @nodeHasDataStruct node, DATA_MODULE_ATTR 
             ctx = @createContextFromNode node, ctx
 
-
-
-
         if @nodeHasDataStruct node, DATA_MODEL_ATTR
             mname = node.getAttribute DATA_MODEL_ATTR
             ctx.addModelNode node, mname
+
+        ctx.modelParser.enterNode node
 
         return ctx
 

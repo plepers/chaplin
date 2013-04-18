@@ -12,7 +12,15 @@ module.exports = class History extends Backbone.History
   # filter handlers that match the fragment and return map
   # of the callbacks ( @see Route.handler )
   loadUrl : (fragmentOverride) ->
+    
     fragment = @fragment = @getFragment fragmentOverride
+
+    # debug
+    # for now always prevent links
+    # and try to load new dom model
+    @publishEvent 'router:fallback', fragment
+    return true
+    
 
     matched = _.filter @handlers, ( handler ) ->
       return handler.route.test fragment

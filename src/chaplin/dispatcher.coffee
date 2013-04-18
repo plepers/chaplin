@@ -42,12 +42,13 @@ module.exports = class Dispatcher
     # Listen to global events.
     @subscribeEvent 'router:match', @dispatch
     # @subscribeEvent 'router:matches', @matches
-    # @subscribeEvent 'router:fallback', @fallback
+    @subscribeEvent 'router:fallback', @fallback
 
     if options['domModelContainer']
       dmc = options['domModelContainer']
     else
       dmc = document.createElement( 'div')
+      dmc.id = "_skeleton"
       document.body.appendChild( dmc )
 
     @domModel = new DomModel dmc
@@ -58,17 +59,22 @@ module.exports = class Dispatcher
   #   @domModel.fetch( { url : "newdom.html"} )
 
 
-  updateSkeleton : ->
+  updateSkeleton : =>
     console.log 'Dispatcher#updateSkeleton'
     contexts = @domModel.getFlatten()
+
     @loadControllers contexts, ( ctrls... ) =>
         # initalize all nodes graph first
         for ctx, i in contexts
           ctx.initialize ctrls[i]
 
-        # then build graph
-        for ctx in contexts
-          ctx.executeAction()
+        # execute graph actions
+        ctx.executeAction() for ctx in contexts
+          
+
+        # compose page
+        ctx.attach() for ctx in contexts
+          
 
 
 
@@ -131,6 +137,7 @@ module.exports = class Dispatcher
   # try to load new dom model
   fallback : ( fragment ) ->
     console.log "Dispatcher#fallback : #{fragment}"
+    @domModel.fetch { url : "#{fragment}.html"}
 
 
   # load multiple controllers
@@ -173,85 +180,7 @@ module.exports = class Dispatcher
       'executeAction'
     this[methodName](controller, @currentRoute, params, options)
 
-  executeAction: (controller, route, params, options) ->
-    # Dispose the previous controller.
-    if @currentController
-      # Notify the rest of the world beforehand.
-      @publishEvent 'beforeControllerDispose', @currentController
-
-      # Passing new parameters that the action method will receive.
-      @currentController.dispose params, route, options
-
-    # Call the controller action with params and options.
-    controller[route.action] params, route, options
-
-    # Save the new controller and its parameters.
-    @currentController = controller
-    @currentParams = params
-
-    # Stop if the action triggered a redirect.
-    return if controller.redirected
-
-    # Adjust the URL.
-    @adjustURL route, params, options
-
-    # We're done! Spread the word!
-    @publishEvent 'dispatcher:dispatch', @currentController,
-      params, route, options
-
-  # Before actions with chained execution.
-  executeBeforeActions: (controller, route, params, options) ->
-    beforeActions = []
-
-    # Before actions can be extended by subclasses, so we need to check the
-    # whole prototype chain for matching before actions. Before actions in
-    # parent classes are executed before actions in child classes.
-    for actions in utils.getAllPropertyVersions controller, 'beforeAction'
-
-      # Iterate over the before actions in search for a matching
-      # name with the arguments’ action name.
-      for name, action of actions
-
-        # Do not add this object more than once.
-        if name is route.action or RegExp("^#{name}$").test route.action
-
-          if typeof action is 'string'
-            action = controller[action]
-
-          unless typeof action is 'function'
-            throw new Error 'Controller#executeBeforeActions: ' +
-              "#{action} is not a valid action method for #{name}."
-
-          # Save the before action.
-          beforeActions.push action
-
-    # Save returned value and also immediately return in case the value is false.
-    next = (method, previous = null) =>
-      # Stop if the action triggered a redirect.
-      return if controller.redirected
-
-      # End of chain, finally start the action.
-      unless method
-        @executeAction controller, route, params, options
-        return
-
-      # Execute the next before action.
-      previous = method.call controller, params, route, options, previous
-
-      # Detect a CommonJS promise in order to use pipelining below,
-      # otherwise execute next method directly.
-      if previous and typeof previous.then is 'function'
-        previous.then (data) =>
-          # Execute as long as the currentController is
-          # the callee for this promise.
-          if not @currentController or controller is @currentController
-            next beforeActions.shift(), data
-      else
-        next beforeActions.shift(), previous
-
-    # Start beforeAction execution chain.
-    next beforeActions.shift()
-
+  
   # Change the URL to the new controller using the router.
   adjustURL: (route, params, options) ->
     return unless route.path?
