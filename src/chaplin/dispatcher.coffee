@@ -70,11 +70,11 @@ module.exports = class Dispatcher
 
         # execute graph actions
         ctx.executeAction() for ctx in contexts
-          
+
 
         # compose page
         ctx.attach() for ctx in contexts
-          
+
 
 
 
@@ -144,7 +144,7 @@ module.exports = class Dispatcher
   # need amd
   loadControllers: ( contexts, handler ) ->
     names = _.map contexts, ( ctx ) =>
-      @settings.controllerPath + ctx.id + @settings.controllerSuffix
+      @settings.controllerPath + ctx.name + @settings.controllerSuffix
     if define?.amd
       require names, handler
     else
@@ -180,7 +180,7 @@ module.exports = class Dispatcher
       'executeAction'
     this[methodName](controller, @currentRoute, params, options)
 
-  
+
   # Change the URL to the new controller using the router.
   adjustURL: (route, params, options) ->
     return unless route.path?
