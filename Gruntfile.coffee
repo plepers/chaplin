@@ -38,6 +38,7 @@ module.exports = (grunt) ->
     'temp/chaplin/lib/support.js'
     'temp/chaplin/lib/composition.js'
     'temp/chaplin/lib/sync_machine.js'
+    'temp/chaplin/lib/batcher.js'
     'temp/chaplin/lib/utils.js'
     'temp/chaplin/lib/helpers.js'
 

@@ -28,6 +28,7 @@ module.exports =
   helpers:                require 'chaplin/lib/helpers'
   support:                require 'chaplin/lib/support'
   SyncMachine:            require 'chaplin/lib/sync_machine'
+  Batcher:                require 'chaplin/lib/batcher'
   utils:                  require 'chaplin/lib/utils'
 
   Node:                   require 'chaplin/tree/node'

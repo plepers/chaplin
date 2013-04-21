@@ -12,12 +12,12 @@ class RootView extends View
 
 module.exports = class Root extends Controller
 
-    initialize : ( context ) ->
+    run : ->
         @view = new RootView
 
 
-    getRegion: ( index ) ->
-        if index isnt 0
-            return null
-        return document.body
-        return @view.el
+    createRegions: ( len ) ->
+        res = []
+        for i in [0..len]
+            res[i] = document.body
+        res

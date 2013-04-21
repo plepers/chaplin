@@ -26,14 +26,18 @@ module.exports = class Controller
     @context = context
   
   # override this method to provide containers for sub modules
-  # @index : the index of the submodule to add
+  # must return an array of dom elements with the given length
+  # @len : the number of regions needed
   # the default implementation return null, it mean that this controller
   # can't contain nested children
-  getRegion: ( index ) ->
+  createRegions: ( len ) ->
     return null
 
-  getContainer : ->
-    @context.getContainer()
+  # internal use
+  # add dom content to the given parent element
+  attach: ( el ) ->
+    @view.attach( el ) if @view?
+
   # Composer
   # --------
 

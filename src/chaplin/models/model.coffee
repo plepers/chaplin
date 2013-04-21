@@ -59,6 +59,10 @@ module.exports = class Model extends Backbone.Model
   # Mixin an EventBroker.
   _(@prototype).extend EventBroker
 
+
+  toString : () ->
+    return this
+
   # Mixin a Deferred.
   initDeferred: ->
     _(this).extend $.Deferred()

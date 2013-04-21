@@ -6,6 +6,7 @@ EventBroker = require 'chaplin/lib/event_broker'
 Root = require 'chaplin/controllers/root'
 ModelParser = require 'chaplin/models/html_model_parser'
 $ = require 'jquery'
+Batcher = require 'chaplin/lib/batcher'
 
 # require 'pjax'
 
@@ -18,16 +19,45 @@ ROOT_NAME = "__root__"
 
 unique = 0
 
+class ModelLoader
+    @extend = Backbone.Model.extend
+
+    _(@prototype).extend Batcher.Loadable.prototype
+    _(@prototype).extend Model.prototype
+
+    context : null
+
+    constructor : ( context ) ->
+      @context = context
+
+    execute : () ->
+      options =
+          url : @context.modelUrl
+          dataType : 'text'
+
+      @fetch options
+
+    parse : ( html ) ->
+      div = document.createElement 'div'
+      div.innerHtml = html
+      @context.modelParser.parseNode div
+      @_sendComplete()
+      return {}
+
+
+
+
 class ComponentContext
 
     # Mixin an EventBroker.
     _(@prototype).extend EventBroker
 
+    node : null
+
     modelUrl : null
+    model : null
     parent : null
     children : null
-    modelIds : null
-    modelNodes : null
     _byId : null
     controller : null
     params : null
@@ -37,14 +67,12 @@ class ComponentContext
     modelParser : null
 
 
-    constructor : ( @name, @action ) ->
-        console.log "new ComponentContext"+@name
+    constructor : ( @node, @name, @action ) ->
+        console.log "ComponentContext #{@name} # #{@action}"
         @id = unique++
         @children = []
         @parent = null
         @modelUrl = null
-        @modelIds = []
-        @modelNodes = {}
         @_byId = {}
         @controller = null
         @params = null
@@ -59,11 +87,6 @@ class ComponentContext
     setModelUrl : ( url ) ->
         @modelUrl = url
 
-    addModelNode :( node, name ) ->
-        if @modelNodes[name]?
-            throw "DomModel.ComponentContext a model '#{name}' already exist in #{@name}"
-        @modelIds.push name
-        @modelNodes[name] = node
 
     addChild : ( comp ) ->
         if( @_byId[ comp.id ] isnt undefined )
@@ -113,31 +136,51 @@ class ComponentContext
             @_byId[child.id] = i
 
 
+
+    fetchModel : () ->
+        if @modelParser.isEmpty() and @modelUrl?
+            return new ModelLoader @
+        @model = @modelParser.getModel()
+        return null
+
+
+
     # called by dispatcher when Controllers are all loaded
     # for the given skeleton
     # init create controller instance
     initialize : ( Controller ) ->
-        return if @controller
+        console.log "ControllerContext#initialize #{@path()} # #{@action}"
+        return if @controller?
         @controller = new Controller
         @controller.initialize this
+
 
     # called by dispatcher when all graph has been initialized
     executeAction : ->
         if @running
             console.log "ControllerContext#executeAction already running #{@path()}"
             return
-        @running = true
         console.log "ControllerContext#executeAction #{@path()}: "+@action
         # Call the controller action with params and options.
-        @controller[@action] @params
+        @controller[@action] @model, @params
+        @running = true
 
         #  request render in Layout
         @publishEvent 'component:render', @controller
 
-    attach : ->
-        console.log "ControllerContext#attach #{@path()} "
-        view = @controller.view
-        view.attach @getContainer() if view
+    compose : ->
+        @executeAction()
+        return if @children.length is 0
+
+        if @childsChanged
+            regions = @controller.createRegions @children.length
+
+        for child, i in @children
+            child.compose()
+            child.controller.attach regions[i] if @childsChanged
+
+        @childsChanged = false
+
 
     getContainer : ->
         return @parent.controller.getRegion @index
@@ -161,7 +204,7 @@ class ComponentContext
         @controller = null
 
     equal : (other ) ->
-        @name         is other.name and
+        @name       is other.name     and
         @modelUrl   is other.modelUrl and
         @action     is other.action
 
@@ -198,10 +241,12 @@ module.exports = class DomModel extends Model
 
     @ComponentContext = ComponentContext
 
-    constructor : ( rootnode )->
-        @rootnode = rootnode
+    rootCtx : null
+    rootnode : null
+
+    constructor : ( @rootnode )->
         @flatten = null
-        @rootCtx = new ComponentContext ROOT_NAME, null
+        @rootCtx = new ComponentContext null, ROOT_NAME, 'run'
 
         super
 
@@ -213,28 +258,47 @@ module.exports = class DomModel extends Model
 
     parse : ( htmlStr ) ->
 
+        @trigger "parsing"
         console.log "DomModel#parse"
 
         if htmlStr?
             @rootnode.innerHTML = htmlStr
 
-        tempRoot = new ComponentContext ROOT_NAME, null
+        tempRoot = new ComponentContext null, ROOT_NAME, 'run'
 
         @parseNodeAndDescendants @rootnode, tempRoot
 
 
         if not @makeDiff tempRoot
-            console.log "DomModel#parse no changes in structures"
             @trigger "parsed"
-            return @rootCtx # = oldContexts
+            return @rootCtx
 
         # invalidate flatten view
         @flatten = null
+        @flatten = @getFlatten()
 
+        if @batcher?
+            @batcher.off 'complete', @modelsLoaded
+
+        @batcher = new Batcher
+        for c in @flatten
+            loadable = c.fetchModel()
+            if loadable?
+                @batcher.addLoadable loadable
+
+        if @batcher.getLength() is 0
+            @trigger "update"
+            @trigger "parsed"
+            return @rootCtx
+
+        @batcher.on 'complete', @modelsLoaded
+        @batcher.execute()
+
+    modelsLoaded : =>
+        @batcher.off 'complete', @modelsLoaded
+        @batcher = null
         @trigger "update"
         @trigger "parsed"
-        return @rootCtx
-
     # return flat representation of components graph
     #  remove __root__ context from the result
     getFlatten : ->
@@ -295,9 +359,13 @@ module.exports = class DomModel extends Model
             # if dispose # already disposed by replaceBy
             #     newCtx.dispose()
 
-        # dispose stale contexts
-        for oldCtx in oldFlat
-            oldCtx._dispose()
+        # push to current stales instead?
+        if @stales?
+            stale._dispose() for stale in @stales
+
+        # store stales context to dispose them on futur
+        # compose call
+        @stales = oldFlat
 
         # compute children invalidation
         for newCtx, i in newFlat
@@ -311,21 +379,19 @@ module.exports = class DomModel extends Model
                         newCtx.childsChanged = true
                         break
 
+    # launch composition in context graph
+    compose : ->
+        if @stales?
+            stale._dispose() for stale in @stales
+        @stales = null
 
-
-
+        @rootCtx.compose()
 
     parseNodeAndDescendants : ( node, context ) ->
-        # DEBUG
-        if not context?
-            throw "aie"
-        # DEBUG
 
         # if the node can't produce context
         # context is not changed
         context = @handleNode( node, context )
-
-
 
 
         currentChild = next = node.firstChild
@@ -345,9 +411,10 @@ module.exports = class DomModel extends Model
         if @nodeHasDataStruct node, DATA_MODULE_ATTR
             ctx = @createContextFromNode node, ctx
 
-        if @nodeHasDataStruct node, DATA_MODEL_ATTR
-            mname = node.getAttribute DATA_MODEL_ATTR
-            ctx.addModelNode node, mname
+#
+#        if @nodeHasDataStruct node, DATA_MODEL_ATTR
+#            mname = node.getAttribute DATA_MODEL_ATTR
+#            ctx.addModelNode node, mname
 
         ctx.modelParser.enterNode node
 
@@ -365,14 +432,6 @@ module.exports = class DomModel extends Model
 
 
 
-    # return true if the given node match one of parent's selectors
-    nodeMatchSelectors : ( node, selectors ) ->
-        for selector in selectors
-            if selector.match node
-                return true
-        return false
-
-
 
     createContextFromNode : ( node, pcontext ) ->
         [comp_id, action] = node.getAttribute( DATA_MODULE_ATTR ).split '#'
@@ -380,26 +439,11 @@ module.exports = class DomModel extends Model
         model_url = node.getAttribute DATA_MODELS_URL_ATTR
 
 
-        ctx = new ComponentContext comp_id, action
+        ctx = new ComponentContext node, comp_id, action
         ctx.setModelUrl model_url
         pcontext.addChild ctx
         return ctx
 
 
 
-    addSelectorsFromNode : ( node, ctx ) ->
-        selsPattern = node.getAttribute DATA_SELECTOR_ATTR
-        ctx.selectors ?= []
-        sels = ctx.selectors
-        # for now just support tagname selector
-        names = selsPattern.split ","
-        for name in names
-            sels.push( tagNameSelector name )
-        return
-
-
-
-    getDefaultDatas : ( node ) ->
-        # for now simply return inner text
-        node.innerText
 

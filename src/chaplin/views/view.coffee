@@ -353,12 +353,8 @@ module.exports = class View extends Backbone.View
 
   # This method is called after a specific `render` of a derived class.
   detach: ( ) ->
-    return unless @container
-   
-
-    # Append the view to the DOM.
-    $(container).remove @el
-    # Trigger an event.
+    # remove the view to the DOM.
+    @$el.remove()
 
   # Disposal
   # --------

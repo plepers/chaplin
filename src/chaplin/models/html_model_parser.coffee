@@ -8,8 +8,22 @@ DATA_ID_ATTR = "data-id"
 DATA_LIST_ATTR = "data-list"
 DATA_SELECTOR_ATTR = "data-sel"
 
+
+
 mdl_set_options = 
     silent : true
+
+modelsTemplates = {}
+
+hasTemplate = ( ctx ) ->
+    modelsTemplates[ ctx.node.tagName ]?
+
+modelFactory = ( node, attributes ) ->
+    return new Model(attributes) unless node?
+    ModelClass = modelsTemplates[ node.tagName ]
+    return if ModelClass?
+        new ModelClass node, attributes
+    new Model attributes
 
 class ModelContext
 
@@ -19,13 +33,12 @@ class ModelContext
         @data = null
         @selector = []
         @isCollection = isCollection is true
-        @node = null
 
     createModel : ( parent ) ->
 
         if @isSimpleData()
             if @parent.isCollection
-                model = new Model
+                model = modelFactory @node,
                     id : @id
                     cid : @id
                     value : @data
@@ -40,7 +53,7 @@ class ModelContext
             parent.set @id, model, mdl_set_options
 
         else
-            model = new Model()
+            model = modelFactory @node
             for cid in @children
                 @attributes[cid].createModel model
 
@@ -110,8 +123,12 @@ tagNameSelector = ( localName ) ->
         node.innerText
 
 
+
 module.exports = class HtmlModelParser
 
+    model : null
+    rootCtx : null
+    ctxStack : null
 
     constructor : -> 
         @rootCtx = new ModelContext( '__root__' )
@@ -125,7 +142,11 @@ module.exports = class HtmlModelParser
         @parseNodeAndDescendants root, @rootCtx
         @buildModel @rootCtx
 
-    
+    isEmpty : ->
+        @rootCtx.children.length is 0
+
+    getModel : ->
+        @model ?= @buildModel @rootCtx
 
     buildModel:  ( ctx ) ->
         # console.log (@rootCtx.debugLog())
@@ -136,10 +157,6 @@ module.exports = class HtmlModelParser
         return mdl.get( "__root__" )
 
     parseNodeAndDescendants : ( node ) ->
-        # DEBUG
-        if not context?
-            throw "aie"
-        # DEBUG
 
         # if the node can't product context 
         # context is not changed
@@ -174,7 +191,7 @@ module.exports = class HtmlModelParser
 
         # if no data found in descendants
         # use defaults methods to grab datas in this node
-        if ctx? and not ctx.hasComplexDatas() and not ctx.isCollection
+        if ctx? and not ctx.hasComplexDatas() and not ctx.isCollection and not hasTemplate( ctx )
             ctx.setData( @getDefaultDatas node )
 
 
@@ -225,3 +242,67 @@ module.exports = class HtmlModelParser
         # for now simply return inner text
         node.innerText
 
+# abstract class for model which
+# grab attributes for nodes
+class NodeModel extends Model
+    n_attribs : [
+#      "id",
+#      "class",
+#      "style",
+      "accesskey",
+      "contenteditable",
+      "contextmenu",
+      "dir",
+      "draggable",
+      "dropzone",
+      "hidden",
+      "lang",
+      "spellcheck",
+      "tabindex",
+      "title",
+      "translate" ]
+
+    string : null
+    attribs : null
+    text : null
+
+    constructor : (node, attributes) ->
+        super attributes
+
+        @attribs = []
+
+        for attr in @n_attribs
+          if node.hasAttribute attr
+            val = node.getAttribute attr
+            @set attr, val
+            @attribs.push [ attr, val ]
+
+        @text = node.innerText
+
+
+
+class LinkModel extends NodeModel
+    n_attribs : [
+      'href',
+      'hreflang',
+      'media',
+      'rel',
+      'target',
+      'type'
+    ].concat NodeModel.prototype.n_attribs
+
+    constructor : ( node, attributes) ->
+        super node, attributes
+
+
+    toString : ( params ) ->
+      buf = '<a '
+      for val in @attribs
+        buf += val[0]+'="'+val[1]+'" '
+      if params?
+        buf += params
+
+      buf += '>'+@text+'</a>'
+
+
+modelsTemplates[ 'A'    ] = LinkModel
