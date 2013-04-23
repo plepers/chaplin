@@ -356,6 +356,7 @@ module.exports = class DomModel extends Model
             for oldCtx, j in oldFlat
                 if oldCtx.equal newCtx
                     oldFlat.splice j, 1
+                    snapshot[i] = [].concat oldCtx.children
                     newCtx.replaceBy oldCtx
                     newFlat[i] = oldCtx
                     break

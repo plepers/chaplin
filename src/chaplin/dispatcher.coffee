@@ -122,7 +122,10 @@ module.exports = class Dispatcher
   # try to load new dom model
   fallback : ( fragment ) ->
     console.log "Dispatcher#fallback : #{fragment}"
-    @domModel.fetch { url : "/#{fragment}.html"}
+    url = fragment+".html"
+    if url[0] isnt "/"
+      url = '/'+url
+    @domModel.fetch { url : url }
 
 
   # load multiple controllers

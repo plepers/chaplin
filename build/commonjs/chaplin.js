@@ -284,9 +284,15 @@ module.exports = Dispatcher = (function() {
   };
 
   Dispatcher.prototype.fallback = function(fragment) {
+    var url;
+
     console.log("Dispatcher#fallback : " + fragment);
+    url = fragment + ".html";
+    if (url[0] !== "/") {
+      url = '/' + url;
+    }
     return this.domModel.fetch({
-      url: "/" + fragment + ".html"
+      url: url
     });
   };
 
@@ -1734,6 +1740,7 @@ module.exports = DomModel = (function(_super) {
         oldCtx = oldFlat[j];
         if (oldCtx.equal(newCtx)) {
           oldFlat.splice(j, 1);
+          snapshot[i] = [].concat(oldCtx.children);
           newCtx.replaceBy(oldCtx);
           newFlat[i] = oldCtx;
           break;
