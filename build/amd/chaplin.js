@@ -368,7 +368,7 @@ module.exports = Composer = function() {
     };
     Composer.prototype._compose = function(name, options) {
         var composition, current;
-        if (typeof options.compose !== "function" && !(options.composition != null)) {
+        if (typeof options.compose !== "function" && options.composition == null) {
             throw new Error("Composer#compose was used incorrectly");
         }
         if (options.composition != null) {
@@ -675,7 +675,7 @@ define('chaplin/controllers/root',['require', 'exports', 'module', 'chaplin/cont
 // uRequire: start body of original nodejs module
 "use strict";
 
-var Controller, Root, RootView, View, __hasProp = {}.hasOwnProperty, __extends = function(child, parent) {
+var Controller, Root, RootView, View, _ref, _ref1, __hasProp = {}.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) {
         if (__hasProp.call(parent, key)) child[key] = parent[key];
     }
@@ -695,7 +695,8 @@ View = require("chaplin/views/view");
 RootView = function(_super) {
     __extends(RootView, _super);
     function RootView() {
-        return RootView.__super__.constructor.apply(this, arguments);
+        _ref = RootView.__super__.constructor.apply(this, arguments);
+        return _ref;
     }
     RootView.prototype.render = function() {};
     return RootView;
@@ -704,7 +705,8 @@ RootView = function(_super) {
 module.exports = Root = function(_super) {
     __extends(Root, _super);
     function Root() {
-        return Root.__super__.constructor.apply(this, arguments);
+        _ref1 = Root.__super__.constructor.apply(this, arguments);
+        return _ref1;
     }
     Root.prototype.run = function() {
         return this.view = new RootView;
@@ -730,7 +732,7 @@ define('chaplin/models/collection',['require', 'exports', 'module', 'underscore'
 // uRequire: start body of original nodejs module
 "use strict";
 
-var Backbone, Collection, EventBroker, Model, utils, _, __hasProp = {}.hasOwnProperty, __extends = function(child, parent) {
+var Backbone, Collection, EventBroker, Model, utils, _, _ref, __hasProp = {}.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) {
         if (__hasProp.call(parent, key)) child[key] = parent[key];
     }
@@ -756,7 +758,8 @@ utils = require("chaplin/lib/utils");
 module.exports = Collection = function(_super) {
     __extends(Collection, _super);
     function Collection() {
-        return Collection.__super__.constructor.apply(this, arguments);
+        _ref = Collection.__super__.constructor.apply(this, arguments);
+        return _ref;
     }
     _(Collection.prototype).extend(EventBroker);
     Collection.prototype.model = Model;
@@ -803,7 +806,7 @@ define('chaplin/models/model',['require', 'exports', 'module', 'underscore', 'ba
 // uRequire: start body of original nodejs module
 "use strict";
 
-var Backbone, EventBroker, Model, serializeAttributes, serializeModelAttributes, utils, _, __hasProp = {}.hasOwnProperty, __extends = function(child, parent) {
+var Backbone, EventBroker, Model, serializeAttributes, serializeModelAttributes, utils, _, _ref, __hasProp = {}.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) {
         if (__hasProp.call(parent, key)) child[key] = parent[key];
     }
@@ -861,7 +864,8 @@ serializeModelAttributes = function(model, currentModel, modelStack) {
 module.exports = Model = function(_super) {
     __extends(Model, _super);
     function Model() {
-        return Model.__super__.constructor.apply(this, arguments);
+        _ref = Model.__super__.constructor.apply(this, arguments);
+        return _ref;
     }
     _(Model.prototype).extend(EventBroker);
     Model.prototype.toString = function() {
@@ -1147,7 +1151,7 @@ module.exports = HtmlModelParser = function() {
         var ctx, dataName, isList;
         dataName = node.getAttribute(DATA_ID_ATTR);
         isList = false;
-        if (!(dataName != null)) {
+        if (dataName == null) {
             dataName = node.getAttribute(DATA_LIST_ATTR);
             isList = true;
         }
@@ -1295,7 +1299,8 @@ ModelLoader = function() {
     ModelLoader.prototype.parse = function(html) {
         var div;
         div = document.createElement("div");
-        div.innerHtml = html;
+        div.innerHTML = html;
+        this.context.node.appendChild(div);
         this.context.modelParser.parseNode(div);
         this._sendComplete();
         return {};
@@ -1407,11 +1412,15 @@ ComponentContext = function() {
         return this.controller.initialize(this);
     };
     ComponentContext.prototype.executeAction = function() {
+        var _ref;
         if (this.running) {
             console.log("ControllerContext#executeAction already running " + this.path());
             return;
         }
         console.log("ControllerContext#executeAction " + this.path() + ": " + this.action);
+        if ((_ref = this.model) == null) {
+            this.model = this.modelParser.getModel();
+        }
         this.controller[this.action](this.model, this.params);
         this.running = true;
         return this.publishEvent("component:render", this.controller);
@@ -2583,7 +2592,7 @@ define('chaplin/lib/history',['require', 'exports', 'module', 'chaplin/lib/event
 // uRequire: start body of original nodejs module
 "use strict";
 
-var Backbone, EventBroker, History, _, __hasProp = {}.hasOwnProperty, __extends = function(child, parent) {
+var Backbone, EventBroker, History, _, _ref, __hasProp = {}.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) {
         if (__hasProp.call(parent, key)) child[key] = parent[key];
     }
@@ -2605,7 +2614,8 @@ _ = require("underscore");
 module.exports = History = function(_super) {
     __extends(History, _super);
     function History() {
-        return History.__super__.constructor.apply(this, arguments);
+        _ref = History.__super__.constructor.apply(this, arguments);
+        return _ref;
     }
     _(History.prototype).extend(EventBroker);
     History.prototype.loadUrl = function(fragmentOverride) {
@@ -3166,7 +3176,7 @@ var support;
 
 support = {
     propertyDescriptors: function() {
-        var o;
+        var error, o;
         if (!(typeof Object.defineProperty === "function" && typeof Object.defineProperties === "function")) {
             return false;
         }
@@ -3176,7 +3186,8 @@ support = {
                 value: "bar"
             });
             return o.foo === "bar";
-        } catch (error) {
+        } catch (_error) {
+            error = _error;
             return false;
         }
     }()

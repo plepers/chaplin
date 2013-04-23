@@ -30,7 +30,6 @@
 
 require.define({'chaplin/application': function(exports, require, module) {
 'use strict';
-
 var Application, Backbone, Composer, Dispatcher, EventBroker, Layout, Router, mediator, _;
 
 _ = require('underscore');
@@ -50,7 +49,6 @@ Router = require('chaplin/lib/router');
 EventBroker = require('chaplin/lib/event_broker');
 
 module.exports = Application = (function() {
-
   function Application() {}
 
   Application.extend = Backbone.Model.extend;
@@ -75,6 +73,7 @@ module.exports = Application = (function() {
 
   Application.prototype.initLayout = function(options) {
     var _ref;
+
     if (options == null) {
       options = {};
     }
@@ -104,6 +103,7 @@ module.exports = Application = (function() {
 
   Application.prototype.dispose = function() {
     var prop, properties, _i, _len;
+
     if (this.disposed) {
       return;
     }
@@ -126,7 +126,6 @@ module.exports = Application = (function() {
 
 }});;require.define({'chaplin/mediator': function(exports, require, module) {
 'use strict';
-
 var Backbone, mediator, support, utils;
 
 Backbone = require('backbone');
@@ -159,7 +158,6 @@ module.exports = mediator;
 
 }});;require.define({'chaplin/dispatcher': function(exports, require, module) {
 'use strict';
-
 var Backbone, ComponentsLoader, CompositeController, Dispatcher, DomModel, EventBroker, utils, _,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __slice = [].slice;
@@ -177,7 +175,6 @@ CompositeController = require('chaplin/controllers/composite');
 DomModel = require('chaplin/models/dom_model');
 
 ComponentsLoader = (function() {
-
   ComponentsLoader.extend = Backbone.Model.extend;
 
   _(ComponentsLoader.prototype).extend(Backbone.Events);
@@ -191,7 +188,6 @@ ComponentsLoader = (function() {
   function ComponentsLoader(settings) {
     this.settings = settings;
     this.complete = __bind(this.complete, this);
-
   }
 
   ComponentsLoader.prototype.dispose = function() {
@@ -204,6 +200,7 @@ ComponentsLoader = (function() {
   ComponentsLoader.prototype.load = function(contexts) {
     var names,
       _this = this;
+
     this.contexts = contexts;
     names = _.map(contexts, function(ctx) {
       return _this.settings.controllerPath + ctx.name + _this.settings.controllerSuffix;
@@ -217,6 +214,7 @@ ComponentsLoader = (function() {
 
   ComponentsLoader.prototype.complete = function() {
     var components;
+
     components = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
     if (this.disposed) {
       return;
@@ -233,7 +231,6 @@ ComponentsLoader = (function() {
 })();
 
 module.exports = Dispatcher = (function() {
-
   Dispatcher.extend = Backbone.Model.extend;
 
   _(Dispatcher.prototype).extend(EventBroker);
@@ -256,13 +253,12 @@ module.exports = Dispatcher = (function() {
 
   function Dispatcher() {
     this.skeletonParsing = __bind(this.skeletonParsing, this);
-
-    this.updateSkeleton = __bind(this.updateSkeleton, this);
-    this.initialize.apply(this, arguments);
+    this.updateSkeleton = __bind(this.updateSkeleton, this);    this.initialize.apply(this, arguments);
   }
 
   Dispatcher.prototype.initialize = function(options) {
     var dmc;
+
     if (options == null) {
       options = {};
     }
@@ -286,6 +282,7 @@ module.exports = Dispatcher = (function() {
 
   Dispatcher.prototype.updateSkeleton = function() {
     var contexts;
+
     console.log('Dispatcher#updateSkeleton');
     contexts = this.domModel.getFlatten();
     return this.loadControllers(contexts);
@@ -300,6 +297,7 @@ module.exports = Dispatcher = (function() {
 
   Dispatcher.prototype.controllersLoaded = function(contexts, controlers) {
     var ctx, i, _i, _len;
+
     for (i = _i = 0, _len = contexts.length; _i < _len; i = ++_i) {
       ctx = contexts[i];
       ctx.initialize(controlers[i]);
@@ -325,6 +323,7 @@ module.exports = Dispatcher = (function() {
 
   Dispatcher.prototype.adjustURL = function(route, params, options) {
     var url;
+
     if (route.path == null) {
       return;
     }
@@ -351,7 +350,6 @@ module.exports = Dispatcher = (function() {
 
 }});;require.define({'chaplin/composer': function(exports, require, module) {
 'use strict';
-
 var Backbone, Composer, Composition, EventBroker, utils, _;
 
 _ = require('underscore');
@@ -365,7 +363,6 @@ Composition = require('chaplin/lib/composition');
 EventBroker = require('chaplin/lib/event_broker');
 
 module.exports = Composer = (function() {
-
   Composer.extend = Backbone.Model.extend;
 
   _(Composer.prototype).extend(EventBroker);
@@ -400,6 +397,7 @@ module.exports = Composer = (function() {
             options: third,
             compose: function() {
               var autoRender, disabledAutoRender;
+
               this.item = new second(this.options);
               autoRender = this.item.autoRender;
               disabledAutoRender = autoRender === void 0 || !autoRender;
@@ -425,7 +423,8 @@ module.exports = Composer = (function() {
 
   Composer.prototype._compose = function(name, options) {
     var composition, current;
-    if (typeof options.compose !== 'function' && !(options.composition != null)) {
+
+    if (typeof options.compose !== 'function' && (options.composition == null)) {
       throw new Error('Composer#compose was used incorrectly');
     }
     if (options.composition != null) {
@@ -453,6 +452,7 @@ module.exports = Composer = (function() {
 
   Composer.prototype.retrieve = function(name, callback) {
     var active, item;
+
     active = this.compositions[name];
     item = (active && !active.stale() ? active.item : void 0);
     return callback(item);
@@ -460,6 +460,7 @@ module.exports = Composer = (function() {
 
   Composer.prototype.cleanup = function() {
     var composition, name, _ref;
+
     _ref = this.compositions;
     for (name in _ref) {
       composition = _ref[name];
@@ -474,6 +475,7 @@ module.exports = Composer = (function() {
 
   Composer.prototype.dispose = function() {
     var composition, name, _ref;
+
     if (this.disposed) {
       return;
     }
@@ -494,7 +496,6 @@ module.exports = Composer = (function() {
 
 }});;require.define({'chaplin/controllers/controller': function(exports, require, module) {
 'use strict';
-
 var Backbone, Controller, EventBroker, _,
   __hasProp = {}.hasOwnProperty;
 
@@ -505,7 +506,6 @@ Backbone = require('backbone');
 EventBroker = require('chaplin/lib/event_broker');
 
 module.exports = Controller = (function() {
-
   Controller.extend = Backbone.Model.extend;
 
   _(Controller.prototype).extend(Backbone.Events);
@@ -536,6 +536,7 @@ module.exports = Controller = (function() {
 
   Controller.prototype.compose = function(name, second, third) {
     var item;
+
     if (arguments.length === 1) {
       item = null;
       this.publishEvent('!composer:retrieve', name, function(composition) {
@@ -572,6 +573,7 @@ module.exports = Controller = (function() {
 
   Controller.prototype.dispose = function() {
     var obj, prop, properties, _i, _len;
+
     if (this.disposed) {
       return;
     }
@@ -601,7 +603,6 @@ module.exports = Controller = (function() {
 
 }});;require.define({'chaplin/controllers/composite': function(exports, require, module) {
 'use strict';
-
 var Backbone, CompositeController, Controller, EventBroker, _,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -619,7 +620,6 @@ Controller = require('chaplin/controllers/controller');
 });
 
 module.exports = CompositeController = (function(_super) {
-
   __extends(CompositeController, _super);
 
   function CompositeController() {
@@ -629,16 +629,17 @@ module.exports = CompositeController = (function(_super) {
   }
 
   /*
-          update composition with given routes
-          and associated controllers classes
-          check if ctrls routes are still valids
-          create needed ones
-          dipose invalids ctrls
+      update composition with given routes
+      and associated controllers classes
+      check if ctrls routes are still valids
+      create needed ones
+      dipose invalids ctrls
   */
 
 
   CompositeController.prototype.recompose = function(controllers, routes) {
     var child, hash, i, index, newChilds, newMap, route, trash, _i, _j, _k, _len, _len1, _len2, _ref, _ref1;
+
     trash = {};
     newChilds = [];
     newMap = {};
@@ -691,6 +692,7 @@ module.exports = CompositeController = (function(_super) {
   CompositeController.prototype.executeBeforeActions = function(controller, route, params, options) {
     var action, actions, beforeActions, name, next, _i, _len, _ref,
       _this = this;
+
     beforeActions = [];
     _ref = utils.getAllPropertyVersions(controller, 'beforeAction');
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -744,8 +746,7 @@ module.exports = CompositeController = (function(_super) {
 
 }});;require.define({'chaplin/controllers/root': function(exports, require, module) {
 'use strict';
-
-var Controller, Root, RootView, View,
+var Controller, Root, RootView, View, _ref, _ref1,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -754,11 +755,11 @@ Controller = require('./controller');
 View = require('chaplin/views/view');
 
 RootView = (function(_super) {
-
   __extends(RootView, _super);
 
   function RootView() {
-    return RootView.__super__.constructor.apply(this, arguments);
+    _ref = RootView.__super__.constructor.apply(this, arguments);
+    return _ref;
   }
 
   RootView.prototype.render = function() {};
@@ -768,11 +769,11 @@ RootView = (function(_super) {
 })(View);
 
 module.exports = Root = (function(_super) {
-
   __extends(Root, _super);
 
   function Root() {
-    return Root.__super__.constructor.apply(this, arguments);
+    _ref1 = Root.__super__.constructor.apply(this, arguments);
+    return _ref1;
   }
 
   Root.prototype.run = function() {
@@ -781,6 +782,7 @@ module.exports = Root = (function(_super) {
 
   Root.prototype.createRegions = function(len) {
     var i, res, _i;
+
     res = [];
     for (i = _i = 0; 0 <= len ? _i <= len : _i >= len; i = 0 <= len ? ++_i : --_i) {
       res[i] = document.body;
@@ -794,8 +796,7 @@ module.exports = Root = (function(_super) {
 
 }});;require.define({'chaplin/models/collection': function(exports, require, module) {
 'use strict';
-
-var Backbone, Collection, EventBroker, Model, utils, _,
+var Backbone, Collection, EventBroker, Model, utils, _, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -810,11 +811,11 @@ Model = require('chaplin/models/model');
 utils = require('chaplin/lib/utils');
 
 module.exports = Collection = (function(_super) {
-
   __extends(Collection, _super);
 
   function Collection() {
-    return Collection.__super__.constructor.apply(this, arguments);
+    _ref = Collection.__super__.constructor.apply(this, arguments);
+    return _ref;
   }
 
   _(Collection.prototype).extend(EventBroker);
@@ -833,6 +834,7 @@ module.exports = Collection = (function(_super) {
 
   Collection.prototype.dispose = function() {
     var prop, properties, _i, _len;
+
     if (this.disposed) {
       return;
     }
@@ -861,8 +863,7 @@ module.exports = Collection = (function(_super) {
 
 }});;require.define({'chaplin/models/model': function(exports, require, module) {
 'use strict';
-
-var Backbone, EventBroker, Model, serializeAttributes, serializeModelAttributes, utils, _,
+var Backbone, EventBroker, Model, serializeAttributes, serializeModelAttributes, utils, _, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -876,6 +877,7 @@ EventBroker = require('chaplin/lib/event_broker');
 
 serializeAttributes = function(model, attributes, modelStack) {
   var delegator, key, otherModel, serializedModels, value, _i, _len, _ref;
+
   delegator = utils.beget(attributes);
   if (modelStack == null) {
     modelStack = {};
@@ -901,6 +903,7 @@ serializeAttributes = function(model, attributes, modelStack) {
 
 serializeModelAttributes = function(model, currentModel, modelStack) {
   var attributes;
+
   if (model === currentModel || _(modelStack).has(model.cid)) {
     return null;
   }
@@ -909,11 +912,11 @@ serializeModelAttributes = function(model, currentModel, modelStack) {
 };
 
 module.exports = Model = (function(_super) {
-
   __extends(Model, _super);
 
   function Model() {
-    return Model.__super__.constructor.apply(this, arguments);
+    _ref = Model.__super__.constructor.apply(this, arguments);
+    return _ref;
   }
 
   _(Model.prototype).extend(EventBroker);
@@ -938,6 +941,7 @@ module.exports = Model = (function(_super) {
 
   Model.prototype.dispose = function() {
     var prop, properties, _i, _len;
+
     if (this.disposed) {
       return;
     }
@@ -992,6 +996,7 @@ hasTemplate = function(ctx) {
 
 modelFactory = function(node, attributes) {
   var ModelClass;
+
   if (node == null) {
     return new Model(attributes);
   }
@@ -1003,7 +1008,6 @@ modelFactory = function(node, attributes) {
 };
 
 ModelContext = (function() {
-
   function ModelContext(id, isCollection) {
     this.id = id;
     this.attributes = {};
@@ -1015,6 +1019,7 @@ ModelContext = (function() {
 
   ModelContext.prototype.createModel = function(parent) {
     var cid, model, _i, _j, _len, _len1, _ref, _ref1;
+
     if (this.isSimpleData()) {
       if (this.parent.isCollection) {
         model = modelFactory(this.node, {
@@ -1059,6 +1064,7 @@ ModelContext = (function() {
 
   ModelContext.prototype.addChild = function(childContext) {
     var cid;
+
     cid = childContext.id;
     if (this.attributes[cid] != null) {
       throw ("ModelContext#addChild  member redefinition " + cid + " in ") + this.path();
@@ -1070,6 +1076,7 @@ ModelContext = (function() {
 
   ModelContext.prototype.debugLog = function(tab, str) {
     var child, cid, ctxItem, _i, _j, _len, _len1, _ref;
+
     if (str == null) {
       str = '';
     }
@@ -1101,6 +1108,7 @@ ModelContext = (function() {
 
   ModelContext.prototype.path = function() {
     var p, str;
+
     str = this.id;
     p = this;
     while (p = p.parent) {
@@ -1125,7 +1133,6 @@ tagNameSelector = function(localName) {
 };
 
 module.exports = HtmlModelParser = (function() {
-
   HtmlModelParser.prototype.model = null;
 
   HtmlModelParser.prototype.rootCtx = null;
@@ -1152,11 +1159,13 @@ module.exports = HtmlModelParser = (function() {
 
   HtmlModelParser.prototype.getModel = function() {
     var _ref;
+
     return (_ref = this.model) != null ? _ref : this.model = this.buildModel(this.rootCtx);
   };
 
   HtmlModelParser.prototype.buildModel = function(ctx) {
     var mdl;
+
     mdl = new Model;
     ctx.createModel(mdl);
     return mdl.get("__root__");
@@ -1164,6 +1173,7 @@ module.exports = HtmlModelParser = (function() {
 
   HtmlModelParser.prototype.parseNodeAndDescendants = function(node) {
     var currentChild, next;
+
     this.enterNode(node);
     currentChild = next = node.firstChild;
     while (currentChild = next) {
@@ -1184,6 +1194,7 @@ module.exports = HtmlModelParser = (function() {
 
   HtmlModelParser.prototype.exitNode = function(node) {
     var ctx;
+
     if (this.ctxStack[0].node !== node) {
       return;
     }
@@ -1204,6 +1215,7 @@ module.exports = HtmlModelParser = (function() {
 
   HtmlModelParser.prototype.nodeMatchSelectors = function(node, selectors) {
     var selector, _i, _len;
+
     for (_i = 0, _len = selectors.length; _i < _len; _i++) {
       selector = selectors[_i];
       if (selector.match(node)) {
@@ -1215,9 +1227,10 @@ module.exports = HtmlModelParser = (function() {
 
   HtmlModelParser.prototype.createContextFromNode = function(node, pcontext) {
     var ctx, dataName, isList;
+
     dataName = node.getAttribute(DATA_ID_ATTR);
     isList = false;
-    if (!(dataName != null)) {
+    if (dataName == null) {
       dataName = node.getAttribute(DATA_LIST_ATTR);
       isList = true;
     }
@@ -1229,6 +1242,7 @@ module.exports = HtmlModelParser = (function() {
 
   HtmlModelParser.prototype.addSelectorsFromNode = function(node, ctx) {
     var name, names, sels, selsPattern, _i, _len, _ref;
+
     selsPattern = node.getAttribute(DATA_SELECTOR_ATTR);
     if ((_ref = ctx.selectors) == null) {
       ctx.selectors = [];
@@ -1250,7 +1264,6 @@ module.exports = HtmlModelParser = (function() {
 })();
 
 NodeModel = (function(_super) {
-
   __extends(NodeModel, _super);
 
   NodeModel.prototype.n_attribs = ["accesskey", "contenteditable", "contextmenu", "dir", "draggable", "dropzone", "hidden", "lang", "spellcheck", "tabindex", "title", "translate"];
@@ -1263,6 +1276,7 @@ NodeModel = (function(_super) {
 
   function NodeModel(node, attributes) {
     var attr, val, _i, _len, _ref;
+
     NodeModel.__super__.constructor.call(this, attributes);
     this.attribs = [];
     _ref = this.n_attribs;
@@ -1282,7 +1296,6 @@ NodeModel = (function(_super) {
 })(Model);
 
 LinkModel = (function(_super) {
-
   __extends(LinkModel, _super);
 
   LinkModel.prototype.n_attribs = ['href', 'hreflang', 'media', 'rel', 'target', 'type'].concat(NodeModel.prototype.n_attribs);
@@ -1293,6 +1306,7 @@ LinkModel = (function(_super) {
 
   LinkModel.prototype.toString = function(params) {
     var buf, val, _i, _len, _ref;
+
     buf = '<a ';
     _ref = this.attribs;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -1346,7 +1360,6 @@ ROOT_NAME = "__root__";
 unique = 0;
 
 ModelLoader = (function() {
-
   ModelLoader.extend = Backbone.Model.extend;
 
   _(ModelLoader.prototype).extend(Batcher.Loadable.prototype);
@@ -1361,6 +1374,7 @@ ModelLoader = (function() {
 
   ModelLoader.prototype.execute = function() {
     var options;
+
     options = {
       url: this.context.modelUrl,
       dataType: 'text'
@@ -1370,8 +1384,10 @@ ModelLoader = (function() {
 
   ModelLoader.prototype.parse = function(html) {
     var div;
+
     div = document.createElement('div');
-    div.innerHtml = html;
+    div.innerHTML = html;
+    this.context.node.appendChild(div);
     this.context.modelParser.parseNode(div);
     this._sendComplete();
     return {};
@@ -1382,7 +1398,6 @@ ModelLoader = (function() {
 })();
 
 ComponentContext = (function() {
-
   _(ComponentContext.prototype).extend(EventBroker);
 
   ComponentContext.prototype.node = null;
@@ -1442,6 +1457,7 @@ ComponentContext = (function() {
 
   ComponentContext.prototype.removeChild = function(comp) {
     var index;
+
     if ((index = this._byId[comp.id] === void 0)) {
       throw "DomModel.ComponentContex#removeChild subcontext '" + comp.name + "' doesn't exist in " + (this.path());
     }
@@ -1463,6 +1479,7 @@ ComponentContext = (function() {
 
   ComponentContext.prototype.replaceChild = function(child, newChild) {
     var index;
+
     newChild.index = index = this._byId[child.id];
     this.children.splice(index, 1, newChild);
     delete this._byId[child.id];
@@ -1472,6 +1489,7 @@ ComponentContext = (function() {
 
   ComponentContext.prototype.copyChildsFrom = function(other) {
     var child, i, _i, _j, _len, _len1, _ref, _ref1, _results;
+
     _ref = this.children;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       child = _ref[_i];
@@ -1508,11 +1526,16 @@ ComponentContext = (function() {
   };
 
   ComponentContext.prototype.executeAction = function() {
+    var _ref;
+
     if (this.running) {
       console.log("ControllerContext#executeAction already running " + (this.path()));
       return;
     }
     console.log(("ControllerContext#executeAction " + (this.path()) + ": ") + this.action);
+    if ((_ref = this.model) == null) {
+      this.model = this.modelParser.getModel();
+    }
     this.controller[this.action](this.model, this.params);
     this.running = true;
     return this.publishEvent('component:render', this.controller);
@@ -1520,6 +1543,7 @@ ComponentContext = (function() {
 
   ComponentContext.prototype.compose = function() {
     var child, i, regions, _i, _len, _ref;
+
     this.executeAction();
     if (this.children.length === 0) {
       return;
@@ -1544,6 +1568,7 @@ ComponentContext = (function() {
 
   ComponentContext.prototype._dispose = function() {
     var c, _i, _len, _ref;
+
     if (this.parent) {
       this.parent.removeChild(this);
     }
@@ -1571,6 +1596,7 @@ ComponentContext = (function() {
 
   ComponentContext.prototype.path = function() {
     var p, str;
+
     str = this.name;
     p = this;
     while (p = p.parent) {
@@ -1581,6 +1607,7 @@ ComponentContext = (function() {
 
   ComponentContext.prototype.flatten = function(flat) {
     var child, _i, _len, _ref;
+
     if (flat != null) {
       flat.push(this);
     } else {
@@ -1610,7 +1637,6 @@ tagNameSelector = function(localName) {
 };
 
 module.exports = DomModel = (function(_super) {
-
   __extends(DomModel, _super);
 
   DomModel.ComponentContext = ComponentContext;
@@ -1622,7 +1648,6 @@ module.exports = DomModel = (function(_super) {
   function DomModel(rootnode) {
     this.rootnode = rootnode;
     this.modelsLoaded = __bind(this.modelsLoaded, this);
-
     this.flatten = null;
     this.rootCtx = new ComponentContext(null, ROOT_NAME, 'run');
     DomModel.__super__.constructor.apply(this, arguments);
@@ -1636,6 +1661,7 @@ module.exports = DomModel = (function(_super) {
 
   DomModel.prototype.parse = function(htmlStr) {
     var c, loadable, tempRoot, _i, _len, _ref;
+
     this.trigger("parsing");
     console.log("DomModel#parse");
     if (htmlStr != null) {
@@ -1694,6 +1720,7 @@ module.exports = DomModel = (function(_super) {
 
   DomModel.prototype.makeDiff = function(newRoot) {
     var c, children, hasChanged, i, j, newCtx, newFlat, oldCtx, oldFlat, oldchildren, recycles, snapshot, stale, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _len5, _len6, _m, _n, _o, _ref, _results;
+
     newFlat = newRoot.flatten();
     oldFlat = this.rootCtx.flatten();
     if (newFlat.length === oldFlat.length) {
@@ -1749,6 +1776,7 @@ module.exports = DomModel = (function(_super) {
       } else {
         _results.push((function() {
           var _len7, _p, _results1;
+
           _results1 = [];
           for (i = _p = 0, _len7 = children.length; _p < _len7; i = ++_p) {
             c = children[i];
@@ -1768,6 +1796,7 @@ module.exports = DomModel = (function(_super) {
 
   DomModel.prototype.compose = function() {
     var stale, _i, _len, _ref;
+
     if (this.stales != null) {
       _ref = this.stales;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -1781,6 +1810,7 @@ module.exports = DomModel = (function(_super) {
 
   DomModel.prototype.parseNodeAndDescendants = function(node, context) {
     var currentChild, next;
+
     context = this.handleNode(node, context);
     currentChild = next = node.firstChild;
     while (currentChild = next) {
@@ -1792,6 +1822,7 @@ module.exports = DomModel = (function(_super) {
 
   DomModel.prototype.handleNode = function(node, pcontext) {
     var ctx;
+
     ctx = pcontext;
     if (this.nodeHasDataStruct(node, DATA_MODULE_ATTR)) {
       ctx = this.createContextFromNode(node, ctx);
@@ -1811,6 +1842,7 @@ module.exports = DomModel = (function(_super) {
 
   DomModel.prototype.createContextFromNode = function(node, pcontext) {
     var action, comp_id, ctx, model_url, _ref;
+
     _ref = node.getAttribute(DATA_MODULE_ATTR).split('#'), comp_id = _ref[0], action = _ref[1];
     model_url = node.getAttribute(DATA_MODELS_URL_ATTR);
     ctx = new ComponentContext(node, comp_id, action);
@@ -1825,7 +1857,6 @@ module.exports = DomModel = (function(_super) {
 
 }});;require.define({'chaplin/views/layout': function(exports, require, module) {
 'use strict';
-
 var $, Backbone, EventBroker, Layout, utils, _,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -1840,7 +1871,6 @@ EventBroker = require('chaplin/lib/event_broker');
 $ = Backbone.$;
 
 module.exports = Layout = (function() {
-
   Layout.extend = Backbone.Model.extend;
 
   _(Layout.prototype).extend(EventBroker);
@@ -1860,8 +1890,7 @@ module.exports = Layout = (function() {
   Layout.prototype._registeredRegions = null;
 
   function Layout() {
-    this.openLink = __bind(this.openLink, this);
-    this.initialize.apply(this, arguments);
+    this.openLink = __bind(this.openLink, this);    this.initialize.apply(this, arguments);
     this.delegateEvents();
     this.registerRegions(this, this.regions);
   }
@@ -1902,6 +1931,7 @@ module.exports = Layout = (function() {
 
   Layout.prototype.hideOldView = function(controller) {
     var scrollTo, view;
+
     scrollTo = this.settings.scrollTo;
     if (scrollTo) {
       window.scrollTo(scrollTo[0], scrollTo[1]);
@@ -1914,6 +1944,7 @@ module.exports = Layout = (function() {
 
   Layout.prototype.showNewView = function(controller) {
     var view;
+
     view = controller.view;
     if (view) {
       return view.$el.show();
@@ -1922,6 +1953,7 @@ module.exports = Layout = (function() {
 
   Layout.prototype.showComponent = function(controller) {
     var view;
+
     view = controller.view;
     if (view) {
       return view.$el.show();
@@ -1930,6 +1962,7 @@ module.exports = Layout = (function() {
 
   Layout.prototype.adjustTitle = function(subtitle) {
     var title;
+
     if (subtitle == null) {
       subtitle = '';
     }
@@ -1956,11 +1989,13 @@ module.exports = Layout = (function() {
 
   Layout.prototype.isExternalLink = function(link) {
     var _ref, _ref1;
+
     return link.target === '_blank' || link.rel === 'external' || ((_ref = link.protocol) !== 'http:' && _ref !== 'https:' && _ref !== 'file:') || ((_ref1 = link.hostname) !== location.hostname && _ref1 !== '');
   };
 
   Layout.prototype.openLink = function(event) {
     var $el, callback, el, external, href, isAnchor, options, path, query, skipRouting, type, _ref;
+
     if (utils.modifierKeyPressed(event)) {
       return;
     }
@@ -2028,6 +2063,7 @@ module.exports = Layout = (function() {
 
   Layout.prototype.registerRegions = function(instance) {
     var name, selector, version, _i, _len, _ref;
+
     _ref = utils.getAllPropertyVersions(instance, 'regions');
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       version = _ref[_i];
@@ -2048,6 +2084,7 @@ module.exports = Layout = (function() {
 
   Layout.prototype.unregisterRegion = function(instance, name) {
     var cid;
+
     cid = instance.cid;
     return this._registeredRegions = _.filter(this._registeredRegions, function(region) {
       return region.instance.cid !== cid || region.name !== name;
@@ -2062,6 +2099,7 @@ module.exports = Layout = (function() {
 
   Layout.prototype.showRegion = function(name, instance) {
     var region;
+
     region = _.find(this._registeredRegions, function(region) {
       return region.name === name && !region.instance.stale;
     });
@@ -2092,7 +2130,6 @@ module.exports = Layout = (function() {
 
 }});;require.define({'chaplin/views/view': function(exports, require, module) {
 'use strict';
-
 var $, Backbone, EventBroker, View, utils, _,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -2108,7 +2145,6 @@ EventBroker = require('chaplin/lib/event_broker');
 $ = Backbone.$;
 
 module.exports = View = (function(_super) {
-
   __extends(View, _super);
 
   _(View.prototype).extend(EventBroker);
@@ -2134,6 +2170,7 @@ module.exports = View = (function(_super) {
   function View(options) {
     var render,
       _this = this;
+
     if (options) {
       _(this).extend(_.pick(options, ['autoAttach', 'autoRender', 'container', 'containerMethod', 'region']));
     }
@@ -2168,6 +2205,7 @@ module.exports = View = (function(_super) {
   View.prototype.delegate = function(eventName, second, third) {
     var bound, events, handler, list, selector,
       _this = this;
+
     if (typeof eventName !== 'string') {
       throw new TypeError('View#delegate: first argument must be a string');
     }
@@ -2196,6 +2234,7 @@ module.exports = View = (function(_super) {
 
   View.prototype._delegateEvents = function(events) {
     var bound, eventName, handler, key, match, selector, value;
+
     for (key in events) {
       value = events[key];
       handler = typeof value === 'function' ? value : this[value];
@@ -2212,6 +2251,7 @@ module.exports = View = (function(_super) {
 
   View.prototype.delegateEvents = function(events) {
     var classEvents, _i, _len, _ref;
+
     this.undelegateEvents();
     if (events) {
       this._delegateEvents(events);
@@ -2236,6 +2276,7 @@ module.exports = View = (function(_super) {
 
   View.prototype.delegateListeners = function() {
     var eventName, key, method, target, version, _i, _len, _ref, _ref1;
+
     if (!this.listen) {
       return;
     }
@@ -2258,6 +2299,7 @@ module.exports = View = (function(_super) {
 
   View.prototype.delegateListener = function(eventName, target, callback) {
     var prop;
+
     if (target === 'model' || target === 'collection') {
       prop = this[target];
       if (prop) {
@@ -2284,6 +2326,7 @@ module.exports = View = (function(_super) {
 
   View.prototype.subview = function(name, view) {
     var byName, subviews, _ref, _ref1;
+
     subviews = (_ref = this.subviews) != null ? _ref : this.subviews = [];
     byName = (_ref1 = this.subviewsByName) != null ? _ref1 : this.subviewsByName = {};
     if (name && view) {
@@ -2298,6 +2341,7 @@ module.exports = View = (function(_super) {
 
   View.prototype.removeSubview = function(nameOrView) {
     var byName, index, name, otherName, otherView, subviews, view, _ref, _ref1;
+
     if (!nameOrView) {
       return;
     }
@@ -2329,6 +2373,7 @@ module.exports = View = (function(_super) {
 
   View.prototype.getTemplateData = function() {
     var data, source;
+
     data = this.model ? utils.serialize(this.model) : this.collection ? {
       items: utils.serialize(this.collection),
       length: this.collection.length
@@ -2351,6 +2396,7 @@ module.exports = View = (function(_super) {
 
   View.prototype.render = function() {
     var html, templateFunc;
+
     if (this.disposed) {
       return false;
     }
@@ -2379,6 +2425,7 @@ module.exports = View = (function(_super) {
 
   View.prototype.dispose = function() {
     var prop, properties, subview, _i, _j, _len, _len1, _ref;
+
     if (this.disposed) {
       return;
     }
@@ -2409,7 +2456,6 @@ module.exports = View = (function(_super) {
 
 }});;require.define({'chaplin/views/collection_view': function(exports, require, module) {
 'use strict';
-
 var $, Backbone, CollectionView, View, _,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -2424,7 +2470,6 @@ View = require('chaplin/views/view');
 $ = Backbone.$;
 
 module.exports = CollectionView = (function(_super) {
-
   __extends(CollectionView, _super);
 
   CollectionView.prototype.itemView = null;
@@ -2465,15 +2510,10 @@ module.exports = CollectionView = (function(_super) {
 
   function CollectionView(options) {
     this.renderAllItems = __bind(this.renderAllItems, this);
-
     this.toggleFallback = __bind(this.toggleFallback, this);
-
     this.itemsReset = __bind(this.itemsReset, this);
-
     this.itemRemoved = __bind(this.itemRemoved, this);
-
-    this.itemAdded = __bind(this.itemAdded, this);
-    if (options) {
+    this.itemAdded = __bind(this.itemAdded, this);    if (options) {
       _(this).extend(_.pick(options, ['renderItems', 'itemView']));
     }
     this.visibleItems = [];
@@ -2498,6 +2538,7 @@ module.exports = CollectionView = (function(_super) {
 
   CollectionView.prototype.getTemplateData = function() {
     var templateData;
+
     templateData = {
       length: this.collection.length
     };
@@ -2546,6 +2587,7 @@ module.exports = CollectionView = (function(_super) {
 
   CollectionView.prototype.toggleFallback = function() {
     var visible;
+
     visible = this.visibleItems.length === 0 && (typeof this.collection.isSynced === 'function' ? this.collection.isSynced() : true);
     return this.$fallback.toggle(visible);
   };
@@ -2561,12 +2603,14 @@ module.exports = CollectionView = (function(_super) {
 
   CollectionView.prototype.toggleLoadingIndicator = function() {
     var visible;
+
     visible = this.collection.length === 0 && this.collection.isSyncing();
     return this.$loading.toggle(visible);
   };
 
   CollectionView.prototype.getItemViews = function() {
     var itemViews, name, view, _ref;
+
     itemViews = {};
     if (this.subviewsByName) {
       _ref = this.subviewsByName;
@@ -2582,6 +2626,7 @@ module.exports = CollectionView = (function(_super) {
 
   CollectionView.prototype.filter = function(filterer, filterCallback) {
     var included, index, item, view, _i, _len, _ref;
+
     this.filterer = filterer;
     if (filterCallback) {
       this.filterCallback = filterCallback;
@@ -2607,6 +2652,7 @@ module.exports = CollectionView = (function(_super) {
 
   CollectionView.prototype.renderAllItems = function() {
     var cid, index, item, items, remainingViewsByCid, view, _i, _j, _len, _len1, _ref;
+
     items = this.collection.models;
     this.visibleItems = [];
     remainingViewsByCid = {};
@@ -2641,6 +2687,7 @@ module.exports = CollectionView = (function(_super) {
 
   CollectionView.prototype.renderItem = function(item) {
     var view;
+
     view = this.subview("itemView:" + item.cid);
     if (!view) {
       view = this.initItemView(item);
@@ -2664,6 +2711,7 @@ module.exports = CollectionView = (function(_super) {
   CollectionView.prototype.insertView = function(item, view, position, enableAnimation) {
     var $list, $next, $previous, $viewEl, children, childrenLength, included, insertInMiddle, isEnd, length, method, viewEl,
       _this = this;
+
     if (enableAnimation == null) {
       enableAnimation = true;
     }
@@ -2734,6 +2782,7 @@ module.exports = CollectionView = (function(_super) {
 
   CollectionView.prototype.updateVisibleItems = function(item, includedInFilter, triggerEvent) {
     var includedInVisibleItems, visibilityChanged, visibleItemsIndex;
+
     if (triggerEvent == null) {
       triggerEvent = true;
     }
@@ -2755,6 +2804,7 @@ module.exports = CollectionView = (function(_super) {
 
   CollectionView.prototype.dispose = function() {
     var prop, properties, _i, _len;
+
     if (this.disposed) {
       return;
     }
@@ -2772,8 +2822,7 @@ module.exports = CollectionView = (function(_super) {
 
 }});;require.define({'chaplin/lib/history': function(exports, require, module) {
 'use strict';
-
-var Backbone, EventBroker, History, _,
+var Backbone, EventBroker, History, _, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -2784,17 +2833,18 @@ Backbone = require('backbone');
 _ = require('underscore');
 
 module.exports = History = (function(_super) {
-
   __extends(History, _super);
 
   function History() {
-    return History.__super__.constructor.apply(this, arguments);
+    _ref = History.__super__.constructor.apply(this, arguments);
+    return _ref;
   }
 
   _(History.prototype).extend(EventBroker);
 
   History.prototype.loadUrl = function(fragmentOverride) {
     var fragment, matched;
+
     fragment = this.fragment = this.getFragment(fragmentOverride);
     this.publishEvent('router:fallback', fragment);
     return true;
@@ -2818,7 +2868,6 @@ module.exports = History = (function(_super) {
 
 }});;require.define({'chaplin/lib/route': function(exports, require, module) {
 'use strict';
-
 var Backbone, Controller, EventBroker, Route, _,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty;
@@ -2842,13 +2891,12 @@ module.exports = Route = (function() {
 
   function Route(pattern, controller, action, options) {
     var _ref;
+
     this.pattern = pattern;
     this.controller = controller;
     this.action = action;
     this.handler = __bind(this.handler, this);
-
     this.addParamName = __bind(this.addParamName, this);
-
     if (_.isRegExp(this.pattern)) {
       throw new Error('Route: RegExps are not supported.\
         Use strings with :names and `constraints` option of route');
@@ -2875,6 +2923,7 @@ module.exports = Route = (function() {
 
   Route.prototype.matches = function(criteria) {
     var name, property, _i, _len, _ref;
+
     if (typeof criteria === 'string') {
       return criteria === this.name;
     } else {
@@ -2892,6 +2941,7 @@ module.exports = Route = (function() {
 
   Route.prototype.reverse = function(params) {
     var index, name, url, value, _i, _len, _ref;
+
     url = this.pattern;
     if (_.isArray(params)) {
       if (params.length < this.paramNames.length) {
@@ -2900,6 +2950,7 @@ module.exports = Route = (function() {
       index = 0;
       url = url.replace(/[:*][^\/\?]+/g, function(match) {
         var result;
+
         result = params[index];
         index += 1;
         return result;
@@ -2924,6 +2975,7 @@ module.exports = Route = (function() {
 
   Route.prototype.createRegExp = function() {
     var pattern;
+
     pattern = this.pattern.replace(escapeRegExp, '\\$&').replace(/(?::|\*)(\w+)/g, this.addParamName);
     return this.regExp = RegExp("^" + pattern + "(?=\\?|$)");
   };
@@ -2939,6 +2991,7 @@ module.exports = Route = (function() {
 
   Route.prototype.test = function(path) {
     var constraint, constraints, matched, name, params;
+
     matched = this.regExp.test(path);
     if (!matched) {
       return false;
@@ -2959,6 +3012,7 @@ module.exports = Route = (function() {
 
   Route.prototype.handler = function(path, options) {
     var params, query, _ref;
+
     options = options ? _.clone(options) : {};
     query = (_ref = options.query) != null ? _ref : this.getCurrentQuery();
     params = this.buildParams(path, query);
@@ -2984,6 +3038,7 @@ module.exports = Route = (function() {
 
   Route.prototype.extractParams = function(path) {
     var index, match, matches, paramName, params, _i, _len, _ref;
+
     params = {};
     matches = this.regExp.exec(path);
     _ref = matches.slice(1);
@@ -2997,6 +3052,7 @@ module.exports = Route = (function() {
 
   Route.prototype.extractQueryParams = function(query) {
     var current, field, pair, pairs, params, value, _i, _len, _ref;
+
     params = {};
     if (!query) {
       return params;
@@ -3033,7 +3089,6 @@ module.exports = Route = (function() {
 
 }});;require.define({'chaplin/lib/router': function(exports, require, module) {
 'use strict';
-
 var Backbone, Chaplin, EventBroker, History, Route, Router, utils, _,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -3052,7 +3107,6 @@ utils = require('chaplin/lib/utils');
 Chaplin = require('chaplin');
 
 module.exports = Router = (function() {
-
   Router.extend = Backbone.Model.extend;
 
   _(Router.prototype).extend(EventBroker);
@@ -3060,9 +3114,7 @@ module.exports = Router = (function() {
   function Router(options) {
     this.options = options != null ? options : {};
     this.route = __bind(this.route, this);
-
     this.match = __bind(this.match, this);
-
     _(this.options).defaults({
       pushState: true,
       root: '/'
@@ -3091,6 +3143,7 @@ module.exports = Router = (function() {
 
   Router.prototype.match = function(pattern, target, options) {
     var action, controller, route, _ref;
+
     if (options == null) {
       options = {};
     }
@@ -3117,6 +3170,7 @@ module.exports = Router = (function() {
 
   Router.prototype.route = function(path, options) {
     var handler, matches, url, _i, _len, _ref;
+
     this.publishEvent('router:fallback', path, options);
     return true;
     options = options ? _.clone(options) : {};
@@ -3143,6 +3197,7 @@ module.exports = Router = (function() {
 
   Router.prototype.routeHandler = function(path, options, callback) {
     var routed;
+
     if (arguments.length === 2 && typeof options === 'function') {
       callback = options;
       options = {};
@@ -3153,6 +3208,7 @@ module.exports = Router = (function() {
 
   Router.prototype.routeByNameHandler = function(name, params, options, callback) {
     var path, routed;
+
     if (arguments.length === 3 && typeof options === 'function') {
       callback = options;
       options = {};
@@ -3168,6 +3224,7 @@ module.exports = Router = (function() {
 
   Router.prototype.reverse = function(criteria, params) {
     var handler, handlers, reversed, root, url, _i, _len;
+
     root = this.options.root;
     handlers = Chaplin.history.handlers;
     for (_i = 0, _len = handlers.length; _i < _len; _i++) {
@@ -3190,6 +3247,7 @@ module.exports = Router = (function() {
 
   Router.prototype.changeURL = function(url, options) {
     var navigateOptions;
+
     if (options == null) {
       options = {};
     }
@@ -3223,13 +3281,13 @@ module.exports = Router = (function() {
 
 }});;require.define({'chaplin/lib/delayer': function(exports, require, module) {
 'use strict';
-
 var Delayer;
 
 Delayer = {
   setTimeout: function(name, time, handler) {
     var handle, wrappedHandler, _ref,
       _this = this;
+
     if ((_ref = this.timeouts) == null) {
       this.timeouts = {};
     }
@@ -3251,6 +3309,7 @@ Delayer = {
   },
   clearAllTimeouts: function() {
     var handle, name, _ref;
+
     if (!this.timeouts) {
       return;
     }
@@ -3262,6 +3321,7 @@ Delayer = {
   },
   setInterval: function(name, time, handler) {
     var handle, _ref;
+
     this.clearInterval(name);
     if ((_ref = this.intervals) == null) {
       this.intervals = {};
@@ -3279,6 +3339,7 @@ Delayer = {
   },
   clearAllIntervals: function() {
     var handle, name, _ref;
+
     if (!this.intervals) {
       return;
     }
@@ -3302,7 +3363,6 @@ module.exports = Delayer;
 
 }});;require.define({'chaplin/lib/event_broker': function(exports, require, module) {
 'use strict';
-
 var EventBroker, mediator,
   __slice = [].slice;
 
@@ -3333,6 +3393,7 @@ EventBroker = {
   },
   publishEvent: function() {
     var args, type;
+
     type = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
     if (typeof type !== 'string') {
       throw new TypeError('EventBroker#publishEvent: ' + 'type argument must be a string');
@@ -3349,12 +3410,12 @@ module.exports = EventBroker;
 
 }});;require.define({'chaplin/lib/support': function(exports, require, module) {
 'use strict';
-
 var support;
 
 support = {
   propertyDescriptors: (function() {
-    var o;
+    var error, o;
+
     if (!(typeof Object.defineProperty === 'function' && typeof Object.defineProperties === 'function')) {
       return false;
     }
@@ -3364,7 +3425,8 @@ support = {
         value: 'bar'
       });
       return o.foo === 'bar';
-    } catch (error) {
+    } catch (_error) {
+      error = _error;
       return false;
     }
   })()
@@ -3374,7 +3436,6 @@ module.exports = support;
 
 }});;require.define({'chaplin/lib/composition': function(exports, require, module) {
 'use strict';
-
 var Backbone, Composition, EventBroker, _,
   __hasProp = {}.hasOwnProperty;
 
@@ -3385,7 +3446,6 @@ Backbone = require('backbone');
 EventBroker = require('chaplin/lib/event_broker');
 
 module.exports = Composition = (function() {
-
   Composition.extend = Backbone.Model.extend;
 
   _(Composition.prototype).extend(Backbone.Events);
@@ -3416,6 +3476,7 @@ module.exports = Composition = (function() {
 
   Composition.prototype.stale = function(value) {
     var item, name;
+
     if (value == null) {
       return this._stale;
     }
@@ -3432,6 +3493,7 @@ module.exports = Composition = (function() {
 
   Composition.prototype.dispose = function() {
     var obj, prop, properties, _i, _len;
+
     if (this.disposed) {
       return;
     }
@@ -3462,7 +3524,6 @@ module.exports = Composition = (function() {
 
 }});;require.define({'chaplin/lib/sync_machine': function(exports, require, module) {
 'use strict';
-
 var STATE_CHANGE, SYNCED, SYNCING, SyncMachine, UNSYNCED, event, _fn, _i, _len, _ref;
 
 UNSYNCED = 'unsynced';
@@ -3490,6 +3551,7 @@ SyncMachine = {
   },
   unsync: function() {
     var _ref;
+
     if ((_ref = this._syncState) === SYNCING || _ref === SYNCED) {
       this._previousSync = this._syncState;
       this._syncState = UNSYNCED;
@@ -3499,6 +3561,7 @@ SyncMachine = {
   },
   beginSync: function() {
     var _ref;
+
     if ((_ref = this._syncState) === UNSYNCED || _ref === SYNCED) {
       this._previousSync = this._syncState;
       this._syncState = SYNCING;
@@ -3549,7 +3612,6 @@ module.exports = SyncMachine;
 
 }});;require.define({'chaplin/lib/batcher': function(exports, require, module) {
 'use strict';
-
 var Backbone, Batcher, LoadableClass, SyncMachine, _,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -3560,7 +3622,6 @@ Backbone = require('backbone');
 SyncMachine = require('./sync_machine');
 
 LoadableClass = (function() {
-
   function LoadableClass() {}
 
   LoadableClass.extend = Backbone.Model.extend;
@@ -3578,7 +3639,6 @@ LoadableClass = (function() {
 })();
 
 module.exports = Batcher = (function() {
-
   Batcher.extend = Backbone.Model.extend;
 
   _(Batcher.prototype).extend(LoadableClass.prototype);
@@ -3592,8 +3652,7 @@ module.exports = Batcher = (function() {
   };
 
   function Batcher() {
-    this.itemComplete = __bind(this.itemComplete, this);
-    _(this).extend(SyncMachine);
+    this.itemComplete = __bind(this.itemComplete, this);    _(this).extend(SyncMachine);
     this.loadables = [];
   }
 
@@ -3606,6 +3665,7 @@ module.exports = Batcher = (function() {
 
   Batcher.prototype.execute = function() {
     var l, _i, _len, _ref, _results;
+
     if (!this.isUnsynced()) {
       return;
     }
@@ -3623,6 +3683,7 @@ module.exports = Batcher = (function() {
 
   Batcher.prototype.itemComplete = function(item) {
     var index;
+
     index = _.indexOf(this.loadables, item);
     item.off('complete', this.itemComplete);
     this.loadables.splice(index, 1);
@@ -3638,7 +3699,6 @@ module.exports = Batcher = (function() {
 
 }});;require.define({'chaplin/lib/utils': function(exports, require, module) {
 'use strict';
-
 var support, utils, _,
   __slice = [].slice,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
@@ -3650,6 +3710,7 @@ support = require('chaplin/lib/support');
 utils = {
   beget: (function() {
     var ctor;
+
     if (typeof Object.create === 'function') {
       return Object.create;
     } else {
@@ -3671,6 +3732,7 @@ utils = {
   },
   readonly: (function() {
     var readonlyDescriptor;
+
     if (support.propertyDescriptors) {
       readonlyDescriptor = {
         writable: false,
@@ -3679,6 +3741,7 @@ utils = {
       };
       return function() {
         var obj, prop, properties, _i, _len;
+
         obj = arguments[0], properties = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
         for (_i = 0, _len = properties.length; _i < _len; _i++) {
           prop = properties[_i];
@@ -3695,6 +3758,7 @@ utils = {
   })(),
   getPrototypeChain: function(object) {
     var chain, _ref;
+
     chain = [object.constructor.prototype];
     while (object = (_ref = object.constructor) != null ? _ref.__super__ : void 0) {
       chain.push(object);
@@ -3703,6 +3767,7 @@ utils = {
   },
   getAllPropertyVersions: function(object, property) {
     var proto, result, value, _i, _len, _ref;
+
     result = [];
     _ref = utils.getPrototypeChain(object);
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -3733,7 +3798,6 @@ module.exports = utils;
 
 }});;require.define({'chaplin/lib/helpers': function(exports, require, module) {
 'use strict';
-
 var helpers, mediator;
 
 mediator = require('chaplin/mediator');
@@ -3741,6 +3805,7 @@ mediator = require('chaplin/mediator');
 helpers = {
   reverse: function(routeName, params) {
     var url;
+
     url = null;
     mediator.publish('!router:reverse', routeName, params, function(result) {
       if (result === false) {
@@ -3762,7 +3827,6 @@ Backbone = require('backbone');
 _ = require('underscore');
 
 module.exports = Node = (function() {
-
   Node.extend = Backbone.Model.extend;
 
   _(Node.prototype).extend(Backbone.Events);
@@ -3777,6 +3841,7 @@ module.exports = Node = (function() {
 
   function Node(parent) {
     var _ref;
+
     if ((_ref = this.parent) == null) {
       this.parent = parent;
     }
@@ -3794,6 +3859,7 @@ module.exports = Node = (function() {
 
   Node.prototype.getChild = function(id) {
     var c;
+
     c = this.cmap[id];
     if (c != null) {
       return c;
@@ -3803,6 +3869,7 @@ module.exports = Node = (function() {
 
   Node.prototype.addChild = function(node) {
     var c;
+
     c = this.cmap[node.id];
     if (c != null) {
       return c;
@@ -3814,6 +3881,7 @@ module.exports = Node = (function() {
 
   Node.prototype.dispose = function() {
     var child, _i, _len, _ref;
+
     if (this.children != null) {
       _ref = this.children;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -3840,7 +3908,6 @@ SEPARATOR = '/';
 PARAM_SEP = '?';
 
 module.exports = Path = (function() {
-
   Path.prototype.path = null;
 
   Path.prototype.params = null;
@@ -3861,6 +3928,7 @@ module.exports = Path = (function() {
 
   Path.prototype.toNode = function() {
     var nodes;
+
     nodes = this.toNodes();
     if (!this._valid) {
       return null;
@@ -3870,6 +3938,7 @@ module.exports = Path = (function() {
 
   Path.prototype.toNodes = function() {
     var _ref;
+
     if ((_ref = this._nodes) == null) {
       this._nodes = this._solveNodes();
     }
@@ -3878,11 +3947,13 @@ module.exports = Path = (function() {
 
   Path.prototype.segments = function() {
     var _ref;
+
     return (_ref = this._segments) != null ? _ref : this._segments = this._buildSegments();
   };
 
   Path.prototype.solve = function(path) {
     var i, j, l, _ref;
+
     _ref = path.split(PARAM_SEP), this.path = _ref[0], this.params = _ref[1];
     i = 0;
     l = this.path.length;
@@ -3904,6 +3975,7 @@ module.exports = Path = (function() {
 
   Path.prototype._solveNodes = function() {
     var current, ns, seg, segs, st, valid, _i, _len;
+
     segs = this.segments();
     st = SiteTree.getInstance();
     current = st.rootNode;
@@ -3948,10 +4020,8 @@ Node = require('./node');
 instance = null;
 
 module.exports = SiteTree = (function() {
-
   function SiteTree() {
-    this.nodeChange = __bind(this.nodeChange, this);
-    this.rootNode = new Node;
+    this.nodeChange = __bind(this.nodeChange, this);    this.rootNode = new Node;
     this.rootNode.describe({
       id: ''
     });
@@ -3966,6 +4036,7 @@ module.exports = SiteTree = (function() {
 
   SiteTree.prototype.buildTree = function(data, target) {
     var node, sub, _i, _len, _ref, _results;
+
     if (target == null) {
       target = this.rootNode;
     }
@@ -3985,6 +4056,7 @@ module.exports = SiteTree = (function() {
 
   SiteTree.prototype.nodeFactory = function(data, parent) {
     var node;
+
     node = new Node(parent);
     node.describe(data);
     return node;
@@ -3992,6 +4064,7 @@ module.exports = SiteTree = (function() {
 
   SiteTree.prototype.dispose = function() {
     var _ref;
+
     if ((_ref = this.rootNode) != null) {
       _ref.dispose();
     }
@@ -4008,7 +4081,6 @@ SiteTree.getInstance = function() {
 };
 
 }});;require.define({'chaplin': function(exports, require, module) {
-
 module.exports = {
   Application: require('chaplin/application'),
   mediator: require('chaplin/mediator'),

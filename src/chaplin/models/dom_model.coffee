@@ -39,7 +39,8 @@ class ModelLoader
 
     parse : ( html ) ->
       div = document.createElement 'div'
-      div.innerHtml = html
+      div.innerHTML = html
+      @context.node.appendChild div
       @context.modelParser.parseNode div
       @_sendComplete()
       return {}
@@ -162,6 +163,8 @@ class ComponentContext
             return
         console.log "ControllerContext#executeAction #{@path()}: "+@action
         # Call the controller action with params and options.
+        @model ?= @modelParser.getModel()
+
         @controller[@action] @model, @params
         @running = true
 
