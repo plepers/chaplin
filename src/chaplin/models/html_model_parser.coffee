@@ -56,8 +56,10 @@ class ModelContext
             model = modelFactory @node
             for cid in @children
                 @attributes[cid].createModel model
-
-            parent.set @id, model, mdl_set_options
+            if @parent and @parent.isCollection
+              parent.push model, mdl_set_options
+            else
+              parent.set @id, model, mdl_set_options
 
 
 

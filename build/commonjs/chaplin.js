@@ -1024,7 +1024,11 @@ ModelContext = (function() {
         cid = _ref1[_j];
         this.attributes[cid].createModel(model);
       }
-      return parent.set(this.id, model, mdl_set_options);
+      if (this.parent && this.parent.isCollection) {
+        return parent.push(model, mdl_set_options);
+      } else {
+        return parent.set(this.id, model, mdl_set_options);
+      }
     }
   };
 
