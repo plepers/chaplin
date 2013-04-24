@@ -11,6 +11,7 @@ Batcher = require 'chaplin/lib/batcher'
 # require 'pjax'
 
 DATA_MODULE_ATTR        = "data-module"
+DATA_ROUTE_ATTR         = "data-route"
 DATA_MODELS_URL_ATTR    = "data-models-url"
 DATA_MODEL_ATTR         = "data-model"
 DATA_SELECTOR_ATTR      = "data-sel"
@@ -66,6 +67,7 @@ class ComponentContext
     index : -1
     childsChanged : false
     modelParser : null
+    route : null
 
 
     constructor : ( @node, @name, @action ) ->
@@ -88,6 +90,9 @@ class ComponentContext
     setModelUrl : ( url ) ->
         @modelUrl = url
 
+    setRoute : ( route ) ->
+        return unless route
+        @route = Backbone.Router.prototype._routeToRegExp route
 
     addChild : ( comp ) ->
         if( @_byId[ comp.id ] isnt undefined )
@@ -171,19 +176,32 @@ class ComponentContext
         #  request render in Layout
         @publishEvent 'component:render', @controller
 
-    compose : ->
+    compose : (fragment) ->
+
         @executeAction()
+        @processRoute fragment
+
         return if @children.length is 0
 
         if @childsChanged
             regions = @controller.createRegions @children.length
 
         for child, i in @children
-            child.compose()
+            child.compose fragment
             child.controller.attach regions[i] if @childsChanged
 
         @childsChanged = false
 
+    processRoute : (frag) ->
+        return unless @route? and @route.test frag
+
+        params = @route.exec(frag).slice 1
+
+        params = _.map params, (param) ->
+            return decodeURIComponent(param) if param
+            return null
+
+        @controller.parameters params
 
     getContainer : ->
         return @parent.controller.getRegion @index
@@ -384,12 +402,12 @@ module.exports = class DomModel extends Model
                         break
 
     # launch composition in context graph
-    compose : ->
+    compose : ( frag )->
         if @stales?
             stale._dispose() for stale in @stales
         @stales = null
 
-        @rootCtx.compose()
+        @rootCtx.compose( frag )
 
     parseNodeAndDescendants : ( node, context ) ->
 
@@ -441,10 +459,13 @@ module.exports = class DomModel extends Model
         [comp_id, action] = node.getAttribute( DATA_MODULE_ATTR ).split '#'
 
         model_url = node.getAttribute DATA_MODELS_URL_ATTR
+        route = node.getAttribute DATA_ROUTE_ATTR
 
 
         ctx = new ComponentContext node, comp_id, action
         ctx.setModelUrl model_url
+        ctx.setRoute route
+
         pcontext.addChild ctx
         return ctx
 

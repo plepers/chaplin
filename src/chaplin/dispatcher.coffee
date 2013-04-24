@@ -64,6 +64,8 @@ module.exports = class Dispatcher
   currentController: null
   currentRoute: null
   currentParams: null
+  currentFragment: null
+
 
   composite : null
 
@@ -114,13 +116,14 @@ module.exports = class Dispatcher
     for ctx, i in contexts
       ctx.initialize controlers[i]
 
-    @domModel.compose()
+    @domModel.compose( @currentFragment )
     # execute graph actions
 
 
   # no routes founds in history handlers
   # try to load new dom model
   fallback : ( fragment ) ->
+    @currentFragment = fragment
     console.log "Dispatcher#fallback : #{fragment}"
     url = fragment+".html"
     if url[0] isnt "/"

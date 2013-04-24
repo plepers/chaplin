@@ -38,6 +38,10 @@ module.exports = class Controller
   attach: ( el ) ->
     @view.attach( el ) if @view?
 
+  # override this method to handle parameters grabbed
+  # from url fragments
+  parameters : ( p ) ->
+
   # Composer
   # --------
 

@@ -205,6 +205,7 @@ module.exports = Dispatcher = function() {
     Dispatcher.prototype.currentController = null;
     Dispatcher.prototype.currentRoute = null;
     Dispatcher.prototype.currentParams = null;
+    Dispatcher.prototype.currentFragment = null;
     Dispatcher.prototype.composite = null;
     Dispatcher.prototype.structure = null;
     Dispatcher.prototype.domModel = null;
@@ -254,10 +255,11 @@ module.exports = Dispatcher = function() {
             ctx = contexts[i];
             ctx.initialize(controlers[i]);
         }
-        return this.domModel.compose();
+        return this.domModel.compose(this.currentFragment);
     };
     Dispatcher.prototype.fallback = function(fragment) {
         var url;
+        this.currentFragment = fragment;
         console.log("Dispatcher#fallback : " + fragment);
         url = fragment + ".html";
         if (url[0] !== "/") {
@@ -472,6 +474,7 @@ module.exports = Controller = function() {
             return this.view.attach(el);
         }
     };
+    Controller.prototype.parameters = function(p) {};
     Controller.prototype.compose = function(name, second, third) {
         var item;
         if (arguments.length === 1) {
@@ -1244,7 +1247,7 @@ define('chaplin/models/dom_model',['require', 'exports', 'module', 'underscore',
   function (require, exports, module) {var isWeb = (typeof define === 'function' && define.amd), isNode = !isWeb;
 
 // uRequire: start body of original nodejs module
-var $, Backbone, Batcher, ComponentContext, DATA_MODELS_URL_ATTR, DATA_MODEL_ATTR, DATA_MODULE_ATTR, DATA_SELECTOR_ATTR, DomModel, EventBroker, Model, ModelLoader, ModelParser, ROOT_NAME, Root, tagNameSelector, unique, _, __bind = function(fn, me) {
+var $, Backbone, Batcher, ComponentContext, DATA_MODELS_URL_ATTR, DATA_MODEL_ATTR, DATA_MODULE_ATTR, DATA_ROUTE_ATTR, DATA_SELECTOR_ATTR, DomModel, EventBroker, Model, ModelLoader, ModelParser, ROOT_NAME, Root, tagNameSelector, unique, _, __bind = function(fn, me) {
     return function() {
         return fn.apply(me, arguments);
     };
@@ -1278,6 +1281,8 @@ $ = require("jquery");
 Batcher = require("chaplin/lib/batcher");
 
 DATA_MODULE_ATTR = "data-module";
+
+DATA_ROUTE_ATTR = "data-route";
 
 DATA_MODELS_URL_ATTR = "data-models-url";
 
@@ -1331,6 +1336,7 @@ ComponentContext = function() {
     ComponentContext.prototype.index = -1;
     ComponentContext.prototype.childsChanged = false;
     ComponentContext.prototype.modelParser = null;
+    ComponentContext.prototype.route = null;
     function ComponentContext(node, name, action) {
         this.node = node;
         this.name = name;
@@ -1350,6 +1356,12 @@ ComponentContext = function() {
     }
     ComponentContext.prototype.setModelUrl = function(url) {
         return this.modelUrl = url;
+    };
+    ComponentContext.prototype.setRoute = function(route) {
+        if (!route) {
+            return;
+        }
+        return this.route = Backbone.Router.prototype._routeToRegExp(route);
     };
     ComponentContext.prototype.addChild = function(comp) {
         if (this._byId[comp.id] !== void 0) {
@@ -1434,9 +1446,10 @@ ComponentContext = function() {
         this.running = true;
         return this.publishEvent("component:render", this.controller);
     };
-    ComponentContext.prototype.compose = function() {
+    ComponentContext.prototype.compose = function(fragment) {
         var child, i, regions, _i, _len, _ref;
         this.executeAction();
+        this.processRoute(fragment);
         if (this.children.length === 0) {
             return;
         }
@@ -1446,12 +1459,26 @@ ComponentContext = function() {
         _ref = this.children;
         for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
             child = _ref[i];
-            child.compose();
+            child.compose(fragment);
             if (this.childsChanged) {
                 child.controller.attach(regions[i]);
             }
         }
         return this.childsChanged = false;
+    };
+    ComponentContext.prototype.processRoute = function(frag) {
+        var params;
+        if (!(this.route != null && this.route.test(frag))) {
+            return;
+        }
+        params = this.route.exec(frag).slice(1);
+        params = _.map(params, function(param) {
+            if (param) {
+                return decodeURIComponent(param);
+            }
+            return null;
+        });
+        return this.controller.parameters(params);
     };
     ComponentContext.prototype.getContainer = function() {
         return this.parent.controller.getRegion(this.index);
@@ -1663,7 +1690,7 @@ module.exports = DomModel = function(_super) {
         }
         return _results;
     };
-    DomModel.prototype.compose = function() {
+    DomModel.prototype.compose = function(frag) {
         var stale, _i, _len, _ref;
         if (this.stales != null) {
             _ref = this.stales;
@@ -1673,7 +1700,7 @@ module.exports = DomModel = function(_super) {
             }
         }
         this.stales = null;
-        return this.rootCtx.compose();
+        return this.rootCtx.compose(frag);
     };
     DomModel.prototype.parseNodeAndDescendants = function(node, context) {
         var currentChild, next;
@@ -1703,11 +1730,13 @@ module.exports = DomModel = function(_super) {
         }
     };
     DomModel.prototype.createContextFromNode = function(node, pcontext) {
-        var action, comp_id, ctx, model_url, _ref;
+        var action, comp_id, ctx, model_url, route, _ref;
         _ref = node.getAttribute(DATA_MODULE_ATTR).split("#"), comp_id = _ref[0], action = _ref[1];
         model_url = node.getAttribute(DATA_MODELS_URL_ATTR);
+        route = node.getAttribute(DATA_ROUTE_ATTR);
         ctx = new ComponentContext(node, comp_id, action);
         ctx.setModelUrl(model_url);
+        ctx.setRoute(route);
         pcontext.addChild(ctx);
         return ctx;
     };
