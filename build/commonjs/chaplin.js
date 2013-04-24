@@ -3160,13 +3160,15 @@ module.exports = Router = (function() {
   Router.prototype.route = function(path, options) {
     var handler, matches, url, _i, _len, _ref;
 
-    this.publishEvent('router:fallback', path, options);
-    return true;
     options = options ? _.clone(options) : {};
     _(options).defaults({
       changeURL: true
     });
     path = path.replace(this.removeRoot, '');
+    this.publishEvent('router:fallback', path, options);
+    url = path + (options.query ? "?" + options.query : "");
+    this.changeURL(url);
+    return true;
     matches = [];
     _ref = Chaplin.history.handlers;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {

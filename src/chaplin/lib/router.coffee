@@ -81,12 +81,6 @@ module.exports = class Router # This class does not extend Backbone.Router.
   # and passes the routing options to the callback function.
   route: (path, options) =>
 
-    # debug
-    # for now always prevent links
-    # and try to load new dom model
-    @publishEvent 'router:fallback', path, options
-    return true
-
     options = if options then _.clone(options) else {}
 
     # Update the URL programmatically after routing.
@@ -94,6 +88,15 @@ module.exports = class Router # This class does not extend Backbone.Router.
 
     # Remove leading subdir and hash or slash.
     path = path.replace @removeRoot, ''
+
+    # debug
+    # for now always prevent links
+    # and try to load new dom model
+    @publishEvent 'router:fallback', path, options
+    url = path + if options.query then "?#{options.query}" else ""
+    @changeURL url
+    return true
+    # debug
 
     matches = [];
     # Find a matching route.
